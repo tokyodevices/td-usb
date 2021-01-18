@@ -1,0 +1,8 @@
+/.vs
+/Debug
+/Release
+/td-usb
+/x64
+/*.o
+*.db
+*.opendb
