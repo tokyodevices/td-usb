@@ -2,36 +2,38 @@
 
 CLI(Command Line Interface) for USB-based products of Tokyo Devices, Inc.
 
-## Usage and Integration
+[https://tokyodevices.com/](https://tokyodevices.com/)
 
-Visit [TD-USB Developer Guide](https://tokyodevices.github.io/td-usb-docs/). (Japanese only)
+## Usage
+
+See [TD-USB Developer Guide](https://tokyodevices.github.io/td-usb-docs/). (Japanese only)
 
 
-## Build & Install
+## Build instructions
 
 ### Dependency
 
-#### For windows
+#### On Windows
 
 `Setupapi.lib` and `Hid.lib` are required and those must be available on your Visual Studio environment. 
 If you do not have them, try to search Windows Driver Kit or Windows SDK. 
 
-#### For linux
+#### On Linux
 
-TD-USB depends on `libusb-dev` package.
-You should install it before the compile.
-ex.) `apt install libusb-dev` for Ubuntu.
+TD-USB is depend on `libusb-dev` package.
+You should install it before compile.
+ex.) `apt install libusb-dev` for Ubuntu/Debian.
 
 ### Compile
 
-#### For windows
+#### On Windows
 
 Open `td-usb.sln` by Visual Studio and build the project.
+Note that you may add library and include path for `Setupapi.lib` and `Hid.lib`.
 
+#### On Linux
 
-#### For linux
-
-Clone the source to your working directory. 
+Clone this repository to working directory. 
 
 
     % git clone https://github.com/tokyodevices/td-usb
@@ -44,7 +46,7 @@ Run make.
     % make
 
 
-Run with no-option shows some software information.
+Run `td-usb` with no-option shows version information.
 
 
     % ./td-usb
@@ -56,19 +58,16 @@ Run with no-option shows some software information.
 
 ### Device permission
 
-USB devices that are connected to Linux platform always be under control of `udev` system.
-Thus in most case it can be accessed only by root user by default. 
+USB devices that are connected to Linux platform firstly be under control of `udev` system.
+Thus in most case it can only be accessed by root user. 
 
-To access the device by normal user, `udev` needs some snippet to apply the permission. 
-
+To add permission for normal user, `udev` needs some snippet. 
 For Ubuntu or Debian, try to create `/etc/udev/rules.d/99-usb-tokyodevices.rules` which includes following line:
 
     SUBSYSTEM=="usb", ATTR{idVendor}=="16c0", ATTR{idProduct}=="05df", MODE="0666"
 
 Note that `16c0` and `05df` should be replaced to VID/PDF of the device you need to use. 
 
-
-
 ## License
 
-This software is distributed in the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+TD-USB is released under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
