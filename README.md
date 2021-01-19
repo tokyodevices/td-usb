@@ -31,20 +31,20 @@ Open `td-usb.sln` by Visual Studio and build the project.
 
 #### For linux
 
-1. Clone the source to your working directory. 
+Clone the source to your working directory. 
 
 
     % git clone https://github.com/tokyodevices/td-usb
 
 
-2. Run make.
+Run make.
 
 
     % cd td-usb
     % make
 
 
-3. Run with no-option shows some software information.
+Run with no-option shows some software information.
 
 
     % ./td-usb
