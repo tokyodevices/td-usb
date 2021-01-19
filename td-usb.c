@@ -26,6 +26,38 @@ int option_format = OPTION_FORMAT_SIMPLE;
 int option_loop = FALSE;
 int option_interval = OPTION_DEFAULT_INTERVAL;
 
+static int setup_device(void)
+{
+	if (dt->setup_write != NULL)
+	{
+		if (dt->setup_write(buffer))
+		{
+			fprintf(stderr, "Error on preparing setup report.\n");
+			return 3;
+		}
+		if (TdHidSetReport(handle, buffer, dt->report_size + 1, dt->output_report_type))
+		{
+			fprintf(stderr, "USB I/O Error.\n");
+			return 2;
+		}
+	}
+
+	if (dt->setup_read != NULL)
+	{
+		if (TdHidGetReport(handle, buffer, dt->report_size + 1, dt->input_report_type))
+		{
+			fprintf(stderr, "USB I/O Error.\n");
+			return 2;
+		}
+		if (dt->setup_read(buffer))
+		{
+			fprintf(stderr, "Error on parsing setup report.\n");
+			return 3;
+		}
+	}
+
+	return 0;
+}
 
 static void print_report(void)
 {
@@ -162,8 +194,19 @@ int main(int argc, char *argv[])
 		errExit(EXITCODE_DEVICE_OPEN_ERROR, NULL);
 	}
 
+	if (setup_device() != 0)
+	{
+		errExit(EXITCODE_DEVICE_IO_ERROR, NULL);
+	}
+
 	if (strcmp(arg_operation, "read") == 0 || strcmp(arg_operation, "listen") == 0)
 	{
+		if (strcmp(arg_operation, "listen") == 0 && (dt->capability1 & CPBLTY1_LISTENABLE) == 0)
+		{
+			errExit(EXITCODE_OPERATION_NOT_SUPPORTED,
+				"Listen operation is not supported on this device.");
+		}
+
 		for (int i = 3; i < argc; i++)
 		{
 			if (strncmp("--format", argv[i], 8) == 0)
@@ -182,13 +225,17 @@ int main(int argc, char *argv[])
 				option_loop = TRUE;
 				p = strchr(argv[i], '=');
 				if (p != NULL) option_interval = atoi(p + 1);
-				if (option_interval <= 0) option_interval = OPTION_DEFAULT_INTERVAL;
+				if (option_interval < OPTION_MIN_INTERVAL) {
+					fprintf(stderr, "Loop interval must be >= %d msec.\n", OPTION_MIN_INTERVAL);
+					errExit(EXITCODE_INVALID_OPTION, NULL);
+				}
 			}
 		}
-
+		
 		print_report();
 
 		if (option_loop == TRUE) TdTimer_Start(TimerCallback, option_interval);
+
 	}
 	else if (strcmp(arg_operation, "write") == 0)
 	{
@@ -248,7 +295,8 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			fprintf(stderr, "Erase operation is not supported on this device.\n");
+			errExit(EXITCODE_OPERATION_NOT_SUPPORTED,
+				"Erase operation is not supported on this device.");
 		}
 	}
 	else if (strcmp(arg_operation, "dfu") == 0)
@@ -259,7 +307,8 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			fprintf(stderr, "Switching to DFU-mode is not supported on this device.\n");
+			errExit(EXITCODE_OPERATION_NOT_SUPPORTED, 
+				"Switching to DFU-mode is not supported on this device.");
 		}
 	}
 	else if (strcmp(arg_operation, "init") == 0)
@@ -282,7 +331,8 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			fprintf(stderr, "Changing serial is not supported on this device.\n");
+			errExit(EXITCODE_OPERATION_NOT_SUPPORTED, 
+				"Changing serial is not supported on this device.");
 		}
 	}
 	else

@@ -11,6 +11,7 @@
 #define OPTION_FORMAT_TSV				4
 
 #define OPTION_DEFAULT_INTERVAL			1000
+#define OPTION_MIN_INTERVAL				50
 
 #define	FALSE							0
 #define	TRUE							1
@@ -18,6 +19,8 @@
 #define EXITCODE_NO_ERROR				0
 #define EXITCODE_UNKNOWN_DEVICE			2
 #define EXITCODE_UNKNOWN_OPERATION		3
+#define EXITCODE_OPERATION_NOT_SUPPORTED		4
+#define EXITCODE_INVALID_OPTION			6
 #define EXITCODE_DEVICE_OPEN_ERROR		11
 #define EXITCODE_DEVICE_IO_ERROR		12
 
@@ -30,6 +33,8 @@
 
 #define CPBLTY1_CHANGE_SERIAL			4
 
+#define CPBLTY1_LISTENABLE				8
+
 typedef struct {
 	char *product_name;
 	unsigned short vendor_id;
@@ -39,6 +44,8 @@ typedef struct {
 	uint8_t output_report_type;
 	int (*prepare_report)(int format, const char *report_string, uint8_t *buffer);
 	int (*print_report)(int format, uint8_t *buffer);
+	int (*setup_write)(uint8_t *buffer);
+	int (*setup_read)(uint8_t *buffer);
 	uint8_t capability1;
 	uint8_t capability2; // reserved
 } td_device_t;

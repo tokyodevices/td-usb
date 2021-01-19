@@ -5,14 +5,42 @@
 #include "../td-usb.h"
 #include "../tdhid.h"
 
+static uint8_t state = 255;
+
 static int print_report(int format, uint8_t *buffer)
 {
-	unsigned short average = ((buffer[4] << 8) | buffer[3]);
+	uint16_t average = ((buffer[4] << 8) | buffer[3]);
 	uint16_t cal = ((buffer[8] << 8) | buffer[7]);
 
 	if (format == OPTION_FORMAT_SIMPLE)
 	{
-		printf("%d\n", average);
+		if (state == 1 && average < cal)
+		{
+			printf("0\n");
+			state = 0;
+		}
+		else if (state == 0 && average >= cal)
+		{
+			printf("1\n");
+			state = 1;
+		}
+		else if( state == 255 )
+		{
+			if (average < cal)
+			{
+				printf("0\n");
+				state = 0;
+			}
+			else
+			{
+				printf("1\n");
+				state = 1;
+			}
+		}
+	}
+	else if (format == OPTION_FORMAT_RAW)
+	{
+		printf("%u\n", average);
 	}
 	else if (format == OPTION_FORMAT_JSON)
 	{

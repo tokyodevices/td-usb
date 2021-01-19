@@ -33,7 +33,7 @@ static td_device_t *export_type(void)
 	dt->print_report = print_report;
 	dt->input_report_type = USB_HID_REPORT_TYPE_INPUT;
 	dt->output_report_type = USB_HID_REPORT_TYPE_FEATURE;
-	dt->capability1 = CPBLTY1_DFU_AFTER_ERASE;
+	dt->capability1 = CPBLTY1_DFU_AFTER_ERASE | CPBLTY1_LISTENABLE;
 	
 	return dt;
 }
