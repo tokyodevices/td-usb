@@ -33,9 +33,6 @@
     <ClCompile Include="devices\tdfa30608.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="devices\iws450.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="devices\iwt120.c">
       <Filter>Source Files</Filter>
     </ClCompile>

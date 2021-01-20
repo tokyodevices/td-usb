@@ -5,14 +5,12 @@
 #include "td-usb.h"
 
 extern td_device_t *(*tdfa30608_import)(void);
-extern td_device_t *(*iws450_import)(void);
 extern td_device_t *(*iwt120_import)(void);
 extern td_device_t *(*iws660_import)(void);
 
 td_device_t *import_device_type(const char *model_name, int compare_length)
 {
 	if (!strncmp(model_name, "tdfa30608", compare_length)) return tdfa30608_import();
-	if (!strncmp(model_name, "iws450", compare_length)) return iws450_import();
 	if (!strncmp(model_name, "iwt120", compare_length)) return iwt120_import();
 	if (!strncmp(model_name, "iws660", compare_length)) return iws660_import();
 	return 0;
