@@ -35,7 +35,7 @@ static int setup_device(void)
 			fprintf(stderr, "Error on preparing setup report.\n");
 			return 3;
 		}
-		if (TdHidSetReport(handle, buffer, dt->output_report_size + 1, dt->output_report_type))
+		if (TdHidSetReport(handle, buffer, dt->report_size + 1, dt->output_report_type))
 		{
 			fprintf(stderr, "USB I/O Error.\n");
 			return 2;
@@ -44,7 +44,7 @@ static int setup_device(void)
 
 	if (dt->setup_read != NULL)
 	{
-		if (TdHidGetReport(handle, buffer, dt->input_report_size + 1, dt->input_report_type))
+		if (TdHidGetReport(handle, buffer, dt->report_size + 1, dt->input_report_type))
 		{
 			fprintf(stderr, "USB I/O Error.\n");
 			return 2;
@@ -63,15 +63,15 @@ static void print_report(void)
 {
 	int err;
 
-	memset(buffer, 0, dt->input_report_size + 1);
+	memset(buffer, 0, dt->report_size + 1);
 
 	if (strcmp(arg_operation, "read") == 0)
 	{
-		err = TdHidGetReport(handle, buffer, dt->input_report_size + 1, dt->input_report_type);
+		err = TdHidGetReport(handle, buffer, dt->report_size + 1, dt->input_report_type);
 	}
 	else
 	{
-		err = TdHidListenReport(handle, buffer, dt->input_report_size + 1);
+		err = TdHidListenReport(handle, buffer, dt->report_size + 1);
 	}
 	
 	if (err)
@@ -84,7 +84,7 @@ static void print_report(void)
 
 	if (option_format == OPTION_FORMAT_RAW)
 	{
-		for (int i = 0; i < dt->input_report_size; i++) {
+		for (int i = 0; i < dt->report_size; i++) {
 			if (i > 0) printf(",");
 			printf("%02X", buffer[i + 1]);
 		}
@@ -121,7 +121,7 @@ static int write_report(const char *data_string)
 		return 1;
 	}
 	
-	if (TdHidSetReport(handle, buffer, dt->output_report_size + 1, dt->output_report_type))
+	if (TdHidSetReport(handle, buffer, dt->report_size + 1, dt->output_report_type))
 	{
 		fprintf(stderr, "USB I/O Error.\n");
 		return 2;
@@ -280,10 +280,10 @@ int main(int argc, char *argv[])
 
 			if (c == 'y')
 			{
-				memset(buffer, 0, dt->output_report_size + 1);
-				buffer[1] = 0x66; buffer[2] = 0x31; buffer[3] = 0x1C; buffer[4] = 0x66; // Erase command & magics
+				memset(buffer, 0, dt->report_size + 1);
+				buffer[1] = 0x66; buffer[2] = 0x31; buffer[2] = 0x1C; buffer[3] = 0x66; // Erase command & magics
 
-				if(TdHidSetReport(handle, buffer, dt->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT))
+				if(TdHidSetReport(handle, buffer, dt->report_size + 1, USB_HID_REPORT_TYPE_OUTPUT))
 				{
 					errExit(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
 				}
@@ -318,11 +318,11 @@ int main(int argc, char *argv[])
 		{
 			time_t epoc;
 
-			memset(buffer, 0, dt->output_report_size + 1);
+			memset(buffer, 0, dt->report_size + 1);
 			buffer[1] = 0x82;
 			time(&epoc); sprintf((char *)&buffer[2], "%llu", epoc);
 
-			if (TdHidSetReport(handle, buffer, dt->output_report_size + 1, USB_HID_REPORT_TYPE_FEATURE))
+			if (TdHidSetReport(handle, buffer, dt->report_size + 1, USB_HID_REPORT_TYPE_FEATURE))
 			{
 				errExit(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
 			}

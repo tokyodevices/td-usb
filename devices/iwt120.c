@@ -52,7 +52,8 @@ static td_device_t *export_type(void)
 
 	dt->vendor_id = 0x16c0;
 	dt->product_id = 0x05df;
-	dt->report_size = 16;
+	dt->input_report_size = 16;
+	dt->output_report_size = 16;
 	dt->input_report_type = USB_HID_REPORT_TYPE_FEATURE;
 	dt->output_report_type = USB_HID_REPORT_TYPE_FEATURE;
 	dt->print_report = print_report;

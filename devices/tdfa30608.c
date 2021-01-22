@@ -29,10 +29,11 @@ static td_device_t *export_type(void)
 
 	dt->vendor_id = TOKYODEVICES_VENDOR_ID;
 	dt->product_id = 6000;
-	dt->report_size = 8;
+	dt->input_report_size = 8;
+	dt->output_report_size = 8;
 	dt->print_report = print_report;
 	dt->input_report_type = USB_HID_REPORT_TYPE_INPUT;
-	dt->output_report_type = USB_HID_REPORT_TYPE_FEATURE;
+	dt->output_report_type = USB_HID_REPORT_TYPE_OUTPUT;
 	dt->capability1 = CPBLTY1_DFU_AFTER_ERASE | CPBLTY1_LISTENABLE;
 	
 	return dt;
