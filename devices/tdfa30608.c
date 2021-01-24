@@ -5,7 +5,6 @@
 #include "../td-usb.h"
 #include "../tdhid.h"
 
-
 static int print_report(int format, uint8_t *buffer)
 {
 	if (format == OPTION_FORMAT_SIMPLE)

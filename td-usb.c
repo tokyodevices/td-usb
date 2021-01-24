@@ -270,7 +270,7 @@ static void erase()
 		if (c == 'y')
 		{
 			memset(buffer, 0, dt->output_report_size + 1);
-			buffer[1] = 0x66; buffer[2] = 0x31; buffer[3] = 0x1C; buffer[4] = 0x66; // Erase command & magics
+			buffer[1] = 0xF6; buffer[2] = 0x31; buffer[3] = 0x1C; buffer[4] = 0x66; // Erase command & magics
 
 			if (TdHidSetReport(handle, buffer, dt->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT))
 			{
