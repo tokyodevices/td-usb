@@ -13,12 +13,13 @@
 
 timer_t timerid = 0;
 
-static void(*pHandler)(void);
+static void(*pHandler)(void *);
+static void *pUserParam;
 
 
 static void timer_handler(int sig, siginfo_t *si, void *uc)
 {
-	pHandler();
+	pHandler(pUserParam);
 }
 
 int _nanosleep(int sec, int nsec)
@@ -43,7 +44,7 @@ int _nanosleep(int sec, int nsec)
 }
 
 
-int TdTimer_Start(void pCallback(void), int Interval)
+int TdTimer_Start(void pCallback(void *), void *pParam, int Interval)
 {
 	long long freq_nanosecs;
 	struct sigaction sa;
@@ -51,6 +52,7 @@ int TdTimer_Start(void pCallback(void), int Interval)
 	struct itimerspec its;
 	
 	pHandler = pCallback;
+	pUserParam = pParam;
 
 	/* Establish handler for timer signal */
 	sa.sa_flags = SA_SIGINFO;
@@ -75,8 +77,4 @@ int TdTimer_Start(void pCallback(void), int Interval)
 	{		
 		_nanosleep(1, 0);    /* sleep 1 sec */
 	}
-}
-
-void TdTimer_Init()
-{
 }

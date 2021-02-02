@@ -42,6 +42,9 @@
     <ClCompile Include="td-usb.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="tdthread-win32.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tdhid.h">
@@ -51,6 +54,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="td-usb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tdthread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -10,21 +10,19 @@
 
 #pragma comment (lib, "winmm.lib")
 
-static void(*pHandler)(void);
+static void(*pUserHandler)(void *);
+static void *pUserParam;
 
 static void CALLBACK MyTimerCallback(UINT wTimerID, UINT msg, DWORD dwUser, DWORD dw1, DWORD dw2)
 {
-	pHandler();
+	pUserHandler(pUserParam);
 }
 
-void TdTimer_Init(void)
+int TdTimer_Start(void pCallback(void *), void *pParam, int Interval)
 {
+	pUserHandler = pCallback;
+	pUserParam = pParam;
 
-}
-
-int TdTimer_Start(void pCallback(void), int Interval)
-{
-	pHandler = pCallback;
 	HANDLE hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	timeSetEvent(Interval, 10, (LPTIMECALLBACK)MyTimerCallback, 0, TIME_PERIODIC);
 	WaitForSingleObject(hEvent, INFINITE);

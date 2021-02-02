@@ -10,14 +10,11 @@
 #include <api/hidsdi.h>
 #include <api/hidpi.h>
 
+#include "td-usb.h"
 #include "tdhid.h"
 
-#ifdef _DEBUG
-#define DEBUG_PRINT(arg)    printf arg
-#else
-#define DEBUG_PRINT(arg)
-#endif
 
+static OVERLAPPED overlapped;
 
 static void print_last_error_msg()
 {
@@ -26,7 +23,7 @@ static void print_last_error_msg()
 	FormatMessage(
 		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
 		NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
-	fprintf(stderr, "Error. Code=%d\n", GetLastError());
+	fprintf(stderr, "Error. Code=%d ", GetLastError());
 	fprintf(stderr, (char *)lpMsgBuf);
 	LocalFree(lpMsgBuf);
 #endif
@@ -36,15 +33,7 @@ void convertUniToAscii(char *buffer)
 {
 	unsigned short  *uni = (unsigned short *)buffer;
 	char            *ascii = buffer;
-
-	while (*uni != 0) {
-		if (*uni >= 256) {
-			*ascii++ = '?';
-		}
-		else {
-			*ascii++ = (char)*uni++;
-		}
-	}
+	while (*uni != 0) *ascii++ = (*uni >= 256) ? '?' : ((char)*uni++);
 	*ascii++ = 0;
 }
 
@@ -67,7 +56,10 @@ int open_device(LPHANDLE lpHandle, GUID *pGUID, HDEVINFO deviceInfoList, int i, 
 	SetupDiGetDeviceInterfaceDetail(deviceInfoList, &deviceInfo, deviceDetails, size, (PDWORD)&size, NULL);
 	DEBUG_PRINT(("  Path: \"%s\"\n", deviceDetails->DevicePath));
 
-	*lpHandle = CreateFile(deviceDetails->DevicePath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+	*lpHandle = CreateFile(deviceDetails->DevicePath, 
+		GENERIC_READ | GENERIC_WRITE,
+		FILE_SHARE_READ | FILE_SHARE_WRITE,
+		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL);
 
 	free(deviceDetails);
 
@@ -257,6 +249,12 @@ int TdHidSetReport(int *handle, unsigned char *buffer, int len, uint8_t report_t
 	else if (report_type == USB_HID_REPORT_TYPE_OUTPUT) 
 	{
 		result = HidD_SetOutputReport(handle, buffer, len);
+		/*
+		DWORD i;
+		DEBUG_PRINT(("WriteFile..."));
+		result = WriteFile(handle, buffer, len, &i, NULL);
+		DEBUG_PRINT(("done.\n"));
+		*/
 	}
 	else 
 	{
@@ -270,6 +268,7 @@ int TdHidSetReport(int *handle, unsigned char *buffer, int len, uint8_t report_t
 		return 0;
 	}	
 }
+
 
 int TdHidGetReport(int *handle, unsigned char *buffer, int len, uint8_t report_type)
 {
@@ -289,19 +288,32 @@ int TdHidGetReport(int *handle, unsigned char *buffer, int len, uint8_t report_t
 	}
 }
 
+
 int TdHidListenReport(int *handle, unsigned char *buffer, int len)
 {
 	DWORD nRead = 0;
 	BOOL rval = FALSE;
 
-	rval = ReadFile(handle, (LPVOID)buffer, len, &nRead, NULL);
+	memset(&overlapped, 0, sizeof(OVERLAPPED));	
+	overlapped.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
-	if (rval == FALSE) {
-		print_last_error_msg();
+	rval = ReadFile(handle, (LPVOID)buffer, len, &nRead, &overlapped);
+	
+	if (rval == FALSE)
+	{
+		DWORD err = GetLastError();
+		if (err == ERROR_IO_PENDING) 
+		{
+			GetOverlappedResult(handle, &overlapped, &nRead, TRUE);
+			rval = TRUE;
+		}
+		else 
+		{
+			print_last_error_msg();			
+		}
 	}
-	else {
-		DEBUG_PRINT(("Read %d of %d bytes\n", nRead, len));
-	}
+
+	CloseHandle(overlapped.hEvent);
 
 	return (rval == FALSE) ? USBOPEN_ERR_IO : 0;
 }

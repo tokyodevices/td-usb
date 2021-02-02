@@ -14,137 +14,27 @@
 #include "td-usb.h"
 #include "tdhid.h"
 #include "tdtimer.h"
+#include "tdthread.h"
 
-unsigned char buffer[MAX_REPORT_LENGTH + 1];
+static td_context_t *context = NULL;
+static td_device_t *dt = NULL;
 
-td_device_t *dt;
-int *handle;
-
-int option_operation = OPTION_OPERATION_LIST;
-int option_format = OPTION_FORMAT_SIMPLE;
-int option_loop = FALSE;
-int option_interval = OPTION_DEFAULT_INTERVAL;
-
-static int setup_device(void)
+/**
+* @brief exit with specified error code and message.
+*/
+void throw_exception(int exitcode, const char *msg)
 {
-	if (dt->setup_write != NULL)
-	{
-		if (dt->setup_write(buffer))
-		{
-			fprintf(stderr, "Error on preparing setup report.\n");
-			return 3;
+	if (msg != NULL) fprintf(stderr, "%s\n", msg);
+
+	if (context != NULL) {
+
+		if (context->handle != NULL) {
+			TdHidCloseDevice(context->handle);
+			context->handle = NULL;
 		}
-		if (TdHidSetReport(handle, buffer, dt->output_report_size + 1, dt->output_report_type))
-		{
-			fprintf(stderr, "USB I/O Error.\n");
-			return 2;
-		}
-	}
 
-	if (dt->setup_read != NULL)
-	{
-		if (TdHidGetReport(handle, buffer, dt->input_report_size + 1, dt->input_report_type))
-		{
-			fprintf(stderr, "USB I/O Error.\n");
-			return 2;
-		}
-		if (dt->setup_read(buffer))
-		{
-			fprintf(stderr, "Error on parsing setup report.\n");
-			return 3;
-		}
-	}
-
-	return 0;
-}
-
-static void print_report(void)
-{
-	int err;
-
-	memset(buffer, 0, dt->input_report_size + 1);
-
-	if (option_operation = OPTION_OPERATION_READ)
-	{
-		err = TdHidGetReport(handle, buffer, dt->input_report_size + 1, dt->input_report_type);
-	}
-	else if(option_operation = OPTION_OPERATION_LISTEN)
-	{
-		err = TdHidListenReport(handle, buffer, dt->input_report_size + 1);
-	}
-	
-	if (err)
-	{
-		fprintf(stderr, "USB I/O Error.\n");
-		TdHidCloseDevice(handle);
-		delete_device_type(dt);
-		exit(EXITCODE_DEVICE_IO_ERROR);
-	}
-
-	if (option_format == OPTION_FORMAT_RAW)
-	{
-		for (int i = 0; i < dt->input_report_size; i++) {
-			if (i > 0) printf(",");
-			printf("%02X", buffer[i + 1]);
-		}
-		printf("\n");
-	}
-	else if (dt->print_report != NULL)
-	{
-		dt->print_report(option_format, buffer);
-	}
-	else
-	{
-		fprintf(stderr, "Read operation is not supported on this device.\n");
-	}
-}
-
-static int write_report(const char *data_string)
-{
-	if (option_format == OPTION_FORMAT_RAW)
-	{
-		fprintf(stderr, "Raw format is not supported yet.\n");
-		return 1;
-	}
-	else if (dt->prepare_report != NULL)
-	{
-		if (dt->prepare_report(option_format, data_string, buffer))
-		{
-			fprintf(stderr, "Error on parsing request string.\n");
-			return 3;
-		}
-	}
-	else
-	{
-		fprintf(stderr, "The operation is not supported on this device.\n");
-		return 1;
-	}
-	
-	if (TdHidSetReport(handle, buffer, dt->output_report_size + 1, dt->output_report_type))
-	{
-		fprintf(stderr, "USB I/O Error.\n");
-		return 2;
-	}
-
-	return 0;
-}
-
-static void print_usage(void)
-{
-	printf("td-usb version 0.2\n");
-	printf("Copyright (C) 2020-2021 Tokyo Devices, Inc. (tokyodevices.jp)\n");
-	printf("Usage: td-usb model_name[:serial] operation [options]\n");
-	printf("Visit https://github.com/tokyodevices/td-usb/ for details\n");
-}
-
-static void TimerCallback(void) { print_report(); }
-
-void errExit(int exitcode, const char *msg)
-{
-	if(msg != NULL) fprintf(stderr, "%s\n", msg);
-
-	if (handle != NULL) {
-		TdHidCloseDevice(handle); handle = NULL;
+		free(context);
+		context = NULL;
 	}
 
 	if (dt != NULL) {
@@ -155,126 +45,71 @@ void errExit(int exitcode, const char *msg)
 	exit(exitcode);
 }
 
-static void list()
+
+/**
+* @brief
+*/
+static void save_operation(void)
 {
-	char *p;
+	uint8_t buffer[MAX_REPORT_LENGTH + 1];
 
-	int len = TdHidListDevices(dt->vendor_id, dt->product_id, dt->product_name, NULL, 0);
-	
-	p = (char *)malloc(len);
-	
-	TdHidListDevices(dt->vendor_id, dt->product_id, dt->product_name, p, len);
-	
-	printf("%s\n", p);
-	
-	free(p);
+	if ( (dt->capability1 & CPBLTY1_SAVE_EEPROM) != 0)
+	{	
+		memset(buffer, 0, dt->output_report_size + 1);
+		buffer[1] = 0xF1; // SAVE
+		buffer[2] = 0x50; // Magic
 
-	handle = NULL;
-	errExit(EXITCODE_NO_ERROR, NULL);
-}
+		DEBUG_PRINT(("Sending SAVE command.\n"));
+		if (TdHidSetReport(context->handle, buffer, dt->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT))
+			throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
 
-static void read_or_listen(int argc, char *argv[])
-{
-	char *p;
+		DEBUG_PRINT(("Listening SAVEA reply.\n"));
+		if (TdHidListenReport(context->handle, buffer, dt->input_report_size + 1) != 0)
+			throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
 
-	if (option_operation == OPTION_OPERATION_LISTEN && (dt->capability1 & CPBLTY1_LISTENABLE) == 0)
-	{
-		errExit(EXITCODE_OPERATION_NOT_SUPPORTED,
-			"Listen operation is not supported on this device.");
+		if (buffer[1] != 0xF1)
+			throw_exception(EXITCODE_DEVICE_IO_ERROR, "Save failure.");
+
+		printf("Device registers have been saved to flash.\n");
 	}
-
-	for (int i = 3; i < argc; i++)
+	else
 	{
-		if (strncmp("--format", argv[i], 8) == 0)
-		{
-			p = strchr(argv[i], '=');
-			if (p != NULL)
-			{
-				if (strcmp("json", p + 1) == 0) option_format = OPTION_FORMAT_JSON;
-				if (strcmp("raw", p + 1) == 0) option_format = OPTION_FORMAT_RAW;
-				if (strcmp("csv", p + 1) == 0) option_format = OPTION_FORMAT_CSV; // reserved.
-				if (strcmp("tsv", p + 1) == 0) option_format = OPTION_FORMAT_TSV; // reserved.
-			}
-		}
-		if (strncmp("--loop", argv[i], 6) == 0)
-		{
-			option_loop = TRUE;
-			p = strchr(argv[i], '=');
-			if (p != NULL) option_interval = atoi(p + 1);
-			if (option_interval < OPTION_MIN_INTERVAL) {
-				fprintf(stderr, "Loop interval must be >= %d msec.\n", OPTION_MIN_INTERVAL);
-				errExit(EXITCODE_INVALID_OPTION, NULL);
-			}
-		}
-	}
-
-	print_report();
-
-	if (option_loop == TRUE)
-	{
-		if (option_operation == OPTION_OPERATION_LISTEN)
-		{
-			while (1) print_report();
-		}
-		else if (option_operation == OPTION_OPERATION_READ)
-		{
-			TdTimer_Start(TimerCallback, option_interval);
-		}
+		throw_exception(EXITCODE_OPERATION_NOT_SUPPORTED,
+			"Save operation is not supported on this device.");
 	}
 }
 
-
-static void write(int argc, char *argv[])
+/**
+* @brief
+*/
+static void destroy_operation(void)
 {
-	char *p;
-	char option_string[256];
-	memset(option_string, 0, 256);
-
-	for (int i = 3; i < argc; i++)
-	{
-		if (strncmp("--data", argv[i], 6) == 0)
-		{
-			p = strchr(argv[i], '=');
-			if (p != NULL) strcpy(option_string, p + 1);
-		}
-		if (strncmp("--loop", argv[i], 6) == 0)
-		{
-			option_loop = TRUE;
-		}
-	}
-
-	do
-	{
-		if (strlen(option_string) == 0)
-		{
-			fgets(option_string, 255, stdin);
-			if ((p = strchr(option_string, '\n')) != NULL) *p = '\0';
-		}
-
-		if (write_report(option_string) != 0) break;
-
-		option_string[0] = '\0';
-
-	} while (option_loop == TRUE);
-
-	errExit(EXITCODE_NO_ERROR, NULL);
-}
-
-static void erase()
-{
-	if ((dt->capability1 & CPBLTY1_DFU_MASK) == CPBLTY1_DFU_AFTER_ERASE)
+	uint8_t* buffer = NULL;
+	
+	if ((dt->capability1 & CPBLTY1_DFU_MASK) == CPBLTY1_DFU_AFTER_DESTROY)
 	{
 		printf("WARNING: The device will not be available until new firmware is written. Continue? [y/N]");
 		char c = fgetc(stdin);
 
 		if (c == 'y')
 		{
-			memset(buffer, 0, dt->output_report_size + 1);
-			buffer[1] = 0xF6; buffer[2] = 0x31; buffer[3] = 0x1C; buffer[4] = 0x66; // Erase command & magics
-
-			if (TdHidSetReport(handle, buffer, dt->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT))
+			if (dt->output_report_size > 0 && dt->output_report_size + 1 < MAX_REPORT_LENGTH)
 			{
-				errExit(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
+				buffer = malloc(dt->output_report_size + 1);
+				memset(buffer, 0, dt->output_report_size + 1);
+				buffer[1] = 0xF6; buffer[2] = 0x31; buffer[3] = 0x1C; buffer[4] = 0x66; // ERASE command & magics
+
+				if (TdHidSetReport(context->handle, buffer, dt->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT))
+				{
+					free(buffer); buffer = NULL;
+					throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
+				}
+
+				free(buffer); buffer = NULL;
+			}
+			else
+			{
+				throw_exception(EXITCODE_DEVICE_IO_ERROR, "Invalid size of output report.");
 			}
 		}
 		else
@@ -284,13 +119,16 @@ static void erase()
 	}
 	else
 	{
-		errExit(EXITCODE_OPERATION_NOT_SUPPORTED,
+		throw_exception(EXITCODE_OPERATION_NOT_SUPPORTED,
 			"Erase operation is not supported on this device.");
 	}
 }
 
 
-static void dfu(void)
+/**
+* @brief
+*/
+static void dfu_operation(void)
 {
 	if ((dt->capability1 & CPBLTY1_DFU_MASK) == CPBLTY1_DFU_AFTER_SWITCH)
 	{
@@ -298,14 +136,19 @@ static void dfu(void)
 	}
 	else
 	{
-		errExit(EXITCODE_OPERATION_NOT_SUPPORTED,
+		throw_exception(EXITCODE_OPERATION_NOT_SUPPORTED,
 			"Switching to DFU-mode is not supported on this device.");
 	}
 }
 
 
-static void init(void)
+/**
+* @brief
+*/
+static void init_operation(void)
 {
+	uint8_t buffer[MAX_REPORT_LENGTH + 1];
+
 	// 0x82 INIT Command for old-device. need report size == 16.
 	if (dt->capability1 & CPBLTY1_CHANGE_SERIAL)
 	{
@@ -315,28 +158,49 @@ static void init(void)
 		buffer[1] = 0x82;
 		time(&epoc); sprintf((char *)&buffer[2], "%llu", epoc);
 
-		if (TdHidSetReport(handle, buffer, dt->output_report_size + 1, USB_HID_REPORT_TYPE_FEATURE))
+		if (TdHidSetReport(context->handle, buffer, dt->output_report_size + 1, USB_HID_REPORT_TYPE_FEATURE))
 		{
-			errExit(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
+			throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
 		}
 
 		printf("Set serial number to %s\n", &buffer[2]);
 	}
 	else
 	{
-		errExit(EXITCODE_OPERATION_NOT_SUPPORTED,
+		throw_exception(EXITCODE_OPERATION_NOT_SUPPORTED,
 			"Changing serial is not supported on this device.");
 	}
 }
 
-int main(int argc, char *argv[])
+
+static void listen_worker(void *p)
+{
+	while(1) dt->listen(p);
+}
+
+
+static void print_usage(void)
+{
+	printf("td-usb version 0.2\n");
+	printf("Copyright (C) 2020-2021 Tokyo Devices, Inc. (tokyodevices.jp)\n");
+	printf("Usage: td-usb model_name[:serial] operation [options]\n");
+	printf("Visit https://github.com/tokyodevices/td-usb/ for details\n");
+}
+
+static void parse_args(int argc, char *argv[])
 {
 	char *arg_operation;
 	char *arg_model_name;
 	int arg_model_name_length;
 	char *p;
 
-	if (argc < 3) { print_usage(); return 1; }
+	context->format = FORMAT_SIMPLE;
+
+	if (argc < 3) 
+	{ 
+		print_usage(); 
+		exit(1); 
+	}
 
 	arg_model_name = argv[1];
 	p = strchr(arg_model_name, ':');
@@ -344,60 +208,176 @@ int main(int argc, char *argv[])
 
 	// Get device type object by model name string
 	dt = import_device_type(arg_model_name, arg_model_name_length);
-	if (dt == 0) 
+	if (dt == 0)
 	{
 		fprintf(stderr, "Unknown model name: %s\n", arg_model_name);
-		return EXITCODE_UNKNOWN_DEVICE;
+		throw_exception(EXITCODE_UNKNOWN_DEVICE, NULL);
 	}
-		
+
 	arg_operation = argv[2];
-	if (!strcmp(arg_operation, "list")) option_operation = OPTION_OPERATION_LIST;
-	else if(!strcmp(arg_operation, "read")) option_operation = OPTION_OPERATION_READ;
-	else if (!strcmp(arg_operation, "listen")) option_operation = OPTION_OPERATION_LISTEN;
-	else if (!strcmp(arg_operation, "write")) option_operation = OPTION_OPERATION_WRITE;
-	else if (!strcmp(arg_operation, "erase")) option_operation = OPTION_OPERATION_ERASE;
-	else if (!strcmp(arg_operation, "dfu")) option_operation = OPTION_OPERATION_DFU;
-	else if (!strcmp(arg_operation, "init")) option_operation = OPTION_OPERATION_INIT;
-
-	if (option_operation == OPTION_OPERATION_LIST) list();
-
-	p = strchr(argv[1], ':');
-
-	handle = TdHidOpenDevice(dt->vendor_id, dt->product_id, dt->product_name, (p == NULL) ? NULL : p + 1);
-	
-	if (handle == NULL)
-	{
-		fprintf(stderr, "Device open error. code=%d\n", errno);
-		errExit(EXITCODE_DEVICE_OPEN_ERROR, NULL);
-	}
-
-	if (setup_device() != 0) errExit(EXITCODE_DEVICE_IO_ERROR, NULL);
-
-	if (option_operation == OPTION_OPERATION_READ || option_operation == OPTION_OPERATION_LISTEN)
-	{
-		read_or_listen(argc, argv);
-	}
-	else if (option_operation == OPTION_OPERATION_WRITE)
-	{
-		write(argc, argv);
-	}
-	else if (option_operation == OPTION_OPERATION_ERASE)
-	{
-		erase();
-	}
-	else if (option_operation == OPTION_OPERATION_DFU)
-	{
-		dfu();
-	}
-	else if (option_operation == OPTION_OPERATION_INIT)
-	{
-		init();
-	}
+	if (!strcmp(arg_operation, "list")) context->operation = OPERATION_LIST;
+	else if (!strcmp(arg_operation, "listen")) context->operation = OPERATION_LISTEN;
+	else if (!strcmp(arg_operation, "read")) context->operation = OPERATION_READ;
+	else if (!strcmp(arg_operation, "write")) context->operation = OPERATION_WRITE;
+	else if (!strcmp(arg_operation, "save")) context->operation = OPERATION_SAVE;
+	else if (!strcmp(arg_operation, "destroy")) context->operation = OPERATION_DESTROY;
+	else if (!strcmp(arg_operation, "dfu")) context->operation = OPERATION_DFU;
+	else if (!strcmp(arg_operation, "init")) context->operation = OPERATION_INIT;
 	else
 	{
 		fprintf(stderr, "Unknown operation: %s\n", arg_operation);
-		errExit(EXITCODE_UNKNOWN_OPERATION, NULL);
+		throw_exception(EXITCODE_UNKNOWN_OPERATION, NULL);
 	}
 
-	errExit(EXITCODE_NO_ERROR, NULL);
+	if (context->operation == OPERATION_READ ||
+		context->operation == OPERATION_WRITE ||
+		context->operation == OPERATION_LISTEN)
+	{
+		context->c = 0;
+		context->v[0] = NULL;
+
+		for (int i = 3; i < argc; i++)
+		{
+			if (strlen(argv[i]) < 2) continue;
+
+			if (argv[i][0] == '-' && argv[i][1] == '-') // options
+			{
+				if (strncmp("--format", argv[i], 8) == 0)
+				{
+					p = strchr(argv[i], '=');
+					if (p != NULL)
+					{
+						if (strcmp("json", p + 1) == 0) context->format = FORMAT_JSON;
+						if (strcmp("raw", p + 1) == 0) context->format = FORMAT_RAW;
+						if (strcmp("csv", p + 1) == 0) context->format = FORMAT_CSV; // reserved.
+						if (strcmp("tsv", p + 1) == 0) context->format = FORMAT_TSV; // reserved.
+					}
+				}
+				else if (strncmp("--loop", argv[i], 6) == 0)
+				{
+					context->loop = TRUE;
+
+					p = strchr(argv[i], '=');
+					if (p != NULL)
+					{
+						context->interval = atoi(p + 1);
+						if (context->interval < OPTION_MIN_INTERVAL)
+						{
+							fprintf(stderr, "Interval must be >= %d msec.\n", OPTION_MIN_INTERVAL);
+							throw_exception(EXITCODE_INVALID_OPTION, NULL);
+						}
+					}
+					else
+					{
+						context->interval = OPTION_DEFAULT_INTERVAL;
+					}
+				}
+			}
+			else // property name|ids
+			{
+				if (context->c >= TD_CONTEXT_MAX_ARG_COUNT)
+				{
+					fprintf(stderr, "Option count must be < %d\n", TD_CONTEXT_MAX_ARG_COUNT);
+					throw_exception(EXITCODE_INVALID_OPTION, NULL);
+				}
+				else
+				{
+					context->v[context->c] = argv[i];
+					context->c++;
+					DEBUG_PRINT(("OPTION:"));
+					DEBUG_PRINT((argv[i]));
+					DEBUG_PRINT(("\n"));
+				}
+			}
+		}
+	}
+}
+
+
+int main(int argc, char *argv[])
+{
+	char *p;
+
+	context = (td_context_t *)malloc(sizeof(td_context_t));
+
+	parse_args(argc, argv);
+
+	if (context->operation == OPERATION_LIST)
+	{
+		int len = TdHidListDevices(dt->vendor_id, dt->product_id, dt->product_name, NULL, 0);
+		char* p = (char*)malloc(len);
+		TdHidListDevices(dt->vendor_id, dt->product_id, dt->product_name, p, len);
+		printf(p); printf("\n");
+		free(p);
+		throw_exception(EXITCODE_NO_ERROR, NULL);
+	}
+
+	p = strchr(argv[1], ':');
+	context->handle = TdHidOpenDevice(dt->vendor_id, dt->product_id, dt->product_name, (p == NULL) ? NULL : p + 1);
+	if (context->handle == NULL)
+	{
+		fprintf(stderr, "Device open error. code=%d\n", errno);
+		throw_exception(EXITCODE_DEVICE_OPEN_ERROR, NULL);
+	}
+	
+	switch (context->operation)
+	{
+	case OPERATION_LISTEN:
+		if (dt->listen != NULL)
+		{
+			do
+			{
+				dt->listen(context);
+			} while (context->loop == TRUE);
+		}
+		else
+		{
+			throw_exception(EXITCODE_OPERATION_NOT_SUPPORTED,
+				"Listen operation is not supported on this device.");
+		}
+		break;
+
+	case OPERATION_READ:		
+		if (dt->read != NULL)
+		{
+			dt->read(context);
+			if (context->interval > 0)	TdTimer_Start(dt->read, context, context->interval);
+		}
+		else
+		{
+			throw_exception(EXITCODE_OPERATION_NOT_SUPPORTED,
+				"Read operation is not supported on this device.");
+		}
+		break;
+
+	case OPERATION_WRITE:
+		if (dt->write != NULL)
+		{
+			dt->write(context);
+		}
+		else
+		{
+			throw_exception(EXITCODE_OPERATION_NOT_SUPPORTED,
+				"Write operation is not supported on this device.");
+		}
+		break;
+
+	case OPERATION_SAVE:
+		save_operation();
+		break;
+
+	case OPERATION_DESTROY:
+		destroy_operation();
+		break;
+
+	case OPERATION_DFU:
+		dfu_operation();
+		break;
+
+	case OPERATION_INIT:
+		init_operation();
+		break;
+	}
+
+	throw_exception(EXITCODE_NO_ERROR, NULL);
 }

@@ -7,44 +7,34 @@
 #include "../td-usb.h"
 #include "../tdhid.h"
 
-static int print_report(int format, uint8_t *buffer)
+
+#define REPORT_SIZE		16
+
+
+static int write(td_context_t* context)
 {
-	if (format == OPTION_FORMAT_SIMPLE)
+	uint8_t report_buffer[REPORT_SIZE + 1];
+	memset(report_buffer, 0, REPORT_SIZE + 1);
+
+	if (context->c != 1)
 	{
-		printf("%d\n", buffer[2]);
+		throw_exception(EXITCODE_INVALID_OPTION, "Just one property can be set.");
 	}
-	else if (format == OPTION_FORMAT_JSON)
-	{
-		printf("{ ");
-		printf("\"fw_ver\": %d, ", buffer[1]);
-		printf("\"val\": %d, ", buffer[2]);		
-		printf("}\n");
-	}
+
+	report_buffer[0] = 0x00; // Dummy report id
+	report_buffer[1] = 0x31; // Set mode command
+	report_buffer[2] = (uint8_t)atoi(context->v[0]); // Register value
+
+	if (TdHidSetReport(context->handle, report_buffer, REPORT_SIZE + 1, USB_HID_REPORT_TYPE_FEATURE))
+		throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
 
 	return 0;
 }
 
-
-static int prepare_report(int format, const char *report_string, uint8_t *buffer)
-{
-	int v = atoi(report_string);
-
-	if (v < 0 || v >= 256)
-	{
-		fprintf(stderr, "Value range error. It must be in 0-255.\n");
-		return 1;
-	}
-
-	buffer[0] = 0x00;
-	buffer[1] = 0x31; // Set mode command
-	buffer[2] = (uint8_t)v;
-
-	return 0;
-}
 
 static td_device_t *export_type(void)
 {
-	td_device_t *dt = (td_device_t *)malloc(sizeof(td_device_t));
+	td_device_t* dt = (td_device_t *)malloc(sizeof(td_device_t));
 	memset(dt, 0, sizeof(td_device_t));
 
 	dt->product_name = (char *)malloc(7);
@@ -52,13 +42,9 @@ static td_device_t *export_type(void)
 
 	dt->vendor_id = 0x16c0;
 	dt->product_id = 0x05df;
-	dt->input_report_size = 16;
-	dt->output_report_size = 16;
-	dt->input_report_type = USB_HID_REPORT_TYPE_FEATURE;
-	dt->output_report_type = USB_HID_REPORT_TYPE_FEATURE;
-	dt->print_report = print_report;
-	dt->prepare_report = prepare_report;
+	dt->output_report_size = REPORT_SIZE;	
 	dt->capability1 = CPBLTY1_CHANGE_SERIAL;
+	dt->write = write;
 
 	return dt;
 }
