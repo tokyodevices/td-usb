@@ -33,7 +33,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v141_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -133,6 +133,12 @@
     <ClInclude Include="td-usb.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\..\RubymineProjects\td-usb-docs\src\build.md" />
+    <None Include="..\..\..\RubymineProjects\td-usb-docs\src\command.md" />
+    <None Include="..\..\..\RubymineProjects\td-usb-docs\src\models.md" />
+    <None Include="docs\quickstart_ja.md" />
+    <None Include="README.md" />
+    <None Include="README_ja.md" />
     <None Include="License.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

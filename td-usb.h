@@ -55,19 +55,20 @@
 #endif
 
 
-typedef struct {
+typedef struct
+{
 	int* handle;
 	int interval;
 	uint8_t operation;
 	uint8_t format;
 	uint8_t loop;
-	char *v[TD_CONTEXT_MAX_ARG_COUNT];
+	char* v[TD_CONTEXT_MAX_ARG_COUNT];
 	int c;
 } td_context_t;
 
 
 typedef struct {
-	char *product_name;
+	char* product_name;
 	unsigned short vendor_id;
 	unsigned short product_id;
 	uint8_t output_report_size;
@@ -77,6 +78,7 @@ typedef struct {
 	int (*listen)(td_context_t* context);
 	uint8_t capability1;
 } td_device_t;
+
 
 
 

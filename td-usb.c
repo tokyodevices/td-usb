@@ -12,22 +12,24 @@
 #include <errno.h>
 
 #include "td-usb.h"
-#include "tdhid.h"
 #include "tdtimer.h"
+#include "tdhid.h"
 #include "tdthread.h"
 
 static td_context_t *context = NULL;
-static td_device_t *dt = NULL;
+static td_device_t *device_type = NULL;
 
 /**
-* @brief exit with specified error code and message.
+* @brief Exit process with specified error code and message.
+* @param[in] exitcode Exit code
+* @param[in] msg Error message
 */
 void throw_exception(int exitcode, const char *msg)
 {
 	if (msg != NULL) fprintf(stderr, "%s\n", msg);
 
-	if (context != NULL) {
-
+	if (context != NULL)
+	{
 		if (context->handle != NULL) {
 			TdHidCloseDevice(context->handle);
 			context->handle = NULL;
@@ -37,9 +39,9 @@ void throw_exception(int exitcode, const char *msg)
 		context = NULL;
 	}
 
-	if (dt != NULL) {
-		delete_device_type(dt);
-		dt = NULL;
+	if (device_type != NULL) {
+		delete_device_type(device_type);
+		device_type = NULL;
 	}
 
 	exit(exitcode);
@@ -49,22 +51,22 @@ void throw_exception(int exitcode, const char *msg)
 /**
 * @brief
 */
-static void save_operation(void)
+static void tddev2_save_to_flash(void)
 {
 	uint8_t buffer[MAX_REPORT_LENGTH + 1];
 
-	if ( (dt->capability1 & CPBLTY1_SAVE_EEPROM) != 0)
-	{	
-		memset(buffer, 0, dt->output_report_size + 1);
+	if ((device_type->capability1 & CPBLTY1_SAVE_EEPROM) != 0)
+	{
+		memset(buffer, 0, device_type->output_report_size + 1);
 		buffer[1] = 0xF1; // SAVE
 		buffer[2] = 0x50; // Magic
 
 		DEBUG_PRINT(("Sending SAVE command.\n"));
-		if (TdHidSetReport(context->handle, buffer, dt->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT))
+		if (TdHidSetReport(context->handle, buffer, device_type->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT))
 			throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
 
 		DEBUG_PRINT(("Listening SAVEA reply.\n"));
-		if (TdHidListenReport(context->handle, buffer, dt->input_report_size + 1) != 0)
+		if (TdHidListenReport(context->handle, buffer, device_type->input_report_size + 1) != 0)
 			throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
 
 		if (buffer[1] != 0xF1)
@@ -79,27 +81,32 @@ static void save_operation(void)
 	}
 }
 
+
 /**
 * @brief
 */
-static void destroy_operation(void)
+static void tddev2_destroy_firmware(void)
 {
 	uint8_t* buffer = NULL;
-	
-	if ((dt->capability1 & CPBLTY1_DFU_MASK) == CPBLTY1_DFU_AFTER_DESTROY)
+
+	if ((device_type->capability1 & CPBLTY1_DFU_MASK) == CPBLTY1_DFU_AFTER_DESTROY)
 	{
 		printf("WARNING: The device will not be available until new firmware is written. Continue? [y/N]");
 		char c = fgetc(stdin);
 
 		if (c == 'y')
 		{
-			if (dt->output_report_size > 0 && dt->output_report_size + 1 < MAX_REPORT_LENGTH)
+			if (device_type->output_report_size > 0 &&
+				device_type->output_report_size + 1 < MAX_REPORT_LENGTH)
 			{
-				buffer = malloc(dt->output_report_size + 1);
-				memset(buffer, 0, dt->output_report_size + 1);
+				buffer = malloc(device_type->output_report_size + 1);
+				memset(buffer, 0, device_type->output_report_size + 1);
 				buffer[1] = 0xF6; buffer[2] = 0x31; buffer[3] = 0x1C; buffer[4] = 0x66; // ERASE command & magics
 
-				if (TdHidSetReport(context->handle, buffer, dt->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT))
+				if (TdHidSetReport(context->handle,
+					buffer, 
+					device_type->output_report_size + 1,
+					USB_HID_REPORT_TYPE_OUTPUT))
 				{
 					free(buffer); buffer = NULL;
 					throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
@@ -125,12 +132,13 @@ static void destroy_operation(void)
 }
 
 
+
 /**
 * @brief
 */
-static void dfu_operation(void)
+static void tddev2_switch_to_dfu(void)
 {
-	if ((dt->capability1 & CPBLTY1_DFU_MASK) == CPBLTY1_DFU_AFTER_SWITCH)
+	if ((device_type->capability1 & CPBLTY1_DFU_MASK) == CPBLTY1_DFU_AFTER_SWITCH)
 	{
 		fprintf(stderr, "Switching to DFU-mode is not supported yet.\n");
 	}
@@ -145,20 +153,20 @@ static void dfu_operation(void)
 /**
 * @brief
 */
-static void init_operation(void)
+static void tddev1_init_operation(void)
 {
 	uint8_t buffer[MAX_REPORT_LENGTH + 1];
 
 	// 0x82 INIT Command for old-device. need report size == 16.
-	if (dt->capability1 & CPBLTY1_CHANGE_SERIAL)
+	if (device_type->capability1 & CPBLTY1_CHANGE_SERIAL)
 	{
 		time_t epoc;
 
-		memset(buffer, 0, dt->output_report_size + 1);
+		memset(buffer, 0, device_type->output_report_size + 1);
 		buffer[1] = 0x82;
-		time(&epoc); sprintf((char *)&buffer[2], "%llu", epoc);
+		time(&epoc); sprintf((char*)&buffer[2], "%llu", epoc);
 
-		if (TdHidSetReport(context->handle, buffer, dt->output_report_size + 1, USB_HID_REPORT_TYPE_FEATURE))
+		if (TdHidSetReport(context->handle, buffer, device_type->output_report_size + 1, USB_HID_REPORT_TYPE_FEATURE))
 		{
 			throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
 		}
@@ -175,7 +183,7 @@ static void init_operation(void)
 
 static void listen_worker(void *p)
 {
-	while(1) dt->listen(p);
+	while(1) device_type->listen(p);
 }
 
 
@@ -207,8 +215,8 @@ static void parse_args(int argc, char *argv[])
 	arg_model_name_length = (p == NULL) ? strlen(arg_model_name) : (p - arg_model_name);
 
 	// Get device type object by model name string
-	dt = import_device_type(arg_model_name, arg_model_name_length);
-	if (dt == 0)
+	device_type = import_device_type(arg_model_name, arg_model_name_length);
+	if (device_type == NULL)
 	{
 		fprintf(stderr, "Unknown model name: %s\n", arg_model_name);
 		throw_exception(EXITCODE_UNKNOWN_DEVICE, NULL);
@@ -299,21 +307,32 @@ int main(int argc, char *argv[])
 	char *p;
 
 	context = (td_context_t *)malloc(sizeof(td_context_t));
-
 	parse_args(argc, argv);
 
 	if (context->operation == OPERATION_LIST)
 	{
-		int len = TdHidListDevices(dt->vendor_id, dt->product_id, dt->product_name, NULL, 0);
+		int len = TdHidListDevices(
+			device_type->vendor_id,
+			device_type->product_id,
+			device_type->product_name,
+			NULL, 0);
 		char* p = (char*)malloc(len);
-		TdHidListDevices(dt->vendor_id, dt->product_id, dt->product_name, p, len);
-		printf(p); printf("\n");
+		TdHidListDevices(
+			device_type->vendor_id,
+			device_type->product_id,
+			device_type->product_name,
+			p, len);
+		printf("%s\n",p);
 		free(p);
 		throw_exception(EXITCODE_NO_ERROR, NULL);
 	}
 
 	p = strchr(argv[1], ':');
-	context->handle = TdHidOpenDevice(dt->vendor_id, dt->product_id, dt->product_name, (p == NULL) ? NULL : p + 1);
+	context->handle = TdHidOpenDevice(
+		device_type->vendor_id,
+		device_type->product_id, 
+		device_type->product_name,
+		(p == NULL) ? NULL : p + 1);
 	if (context->handle == NULL)
 	{
 		fprintf(stderr, "Device open error. code=%d\n", errno);
@@ -323,11 +342,11 @@ int main(int argc, char *argv[])
 	switch (context->operation)
 	{
 	case OPERATION_LISTEN:
-		if (dt->listen != NULL)
+		if (device_type->listen != NULL)
 		{
 			do
 			{
-				dt->listen(context);
+				device_type->listen(context);
 			} while (context->loop == TRUE);
 		}
 		else
@@ -338,10 +357,10 @@ int main(int argc, char *argv[])
 		break;
 
 	case OPERATION_READ:		
-		if (dt->read != NULL)
+		if (device_type->read != NULL)
 		{
-			dt->read(context);
-			if (context->interval > 0)	TdTimer_Start(dt->read, context, context->interval);
+			device_type->read(context);
+			if (context->interval > 0)	TdTimer_Start(device_type->read, context, context->interval);
 		}
 		else
 		{
@@ -351,9 +370,9 @@ int main(int argc, char *argv[])
 		break;
 
 	case OPERATION_WRITE:
-		if (dt->write != NULL)
+		if (device_type->write != NULL)
 		{
-			dt->write(context);
+			device_type->write(context);
 		}
 		else
 		{
@@ -363,19 +382,19 @@ int main(int argc, char *argv[])
 		break;
 
 	case OPERATION_SAVE:
-		save_operation();
+		tddev2_save_to_flash();
 		break;
 
 	case OPERATION_DESTROY:
-		destroy_operation();
+		tddev2_destroy_firmware();
 		break;
 
 	case OPERATION_DFU:
-		dfu_operation();
+		tddev2_switch_to_dfu();
 		break;
 
 	case OPERATION_INIT:
-		init_operation();
+		tddev1_init_operation();
 		break;
 	}
 

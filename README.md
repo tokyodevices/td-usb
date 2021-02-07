@@ -2,13 +2,23 @@
 
 CLI(Command Line Interface) for USB-based products of Tokyo Devices, Inc.
 
-[https://tokyodevices.com/](https://tokyodevices.com/)
+[Japanese(Nihongo)](README_ja.md)
 
 ## Target platform
 
 - Microsoft Windows 7 or later 32/64bit  
   (Depricated support on Microsoft Windows XP SP3)
 - Linux
+
+
+## Product models
+
+|Model number|Name|`model_name` string|
+|-------|-----|---------------|
+|TDFA30608|[8CH USB Digital IO Module](https://tokyodevices.com/items/284)|`tdfa30608`|
+|IWT120-USB|[Generic USB LED/Buzzer Module](https://tokyodevices.com/items/201)|`iwt120`|
+|IWS660-CS|[Generic USB Illuminance Meter](https://tokyodevices.com/items/228)|`iws660`|
+
 
 ## Build instructions
 
@@ -75,8 +85,6 @@ Note that `16c0` and `05df` should be replaced to VID/PID of the device which yo
 
 Available operation and option differ depending on the product model.
 
-See [TD-USB Developer Guide](https://tokyodevices.github.io/td-usb-docs/). (Japanese only)
-
 
 ### Specifying product model
 
@@ -121,38 +129,6 @@ See [TD-USB Developer Guide](https://tokyodevices.github.io/td-usb-docs/). (Japa
 
 - After this operation the device will be unavailable until new firmware is written.
 
-
-
-
-## Usage
-
-See [TD-USB Developer Guide](https://tokyodevices.github.io/td-usb-docs/). (Japanese only)
-
-
-### Read operation
-
-    td-usb (model_name) read [--format=(format)] [--loop=(interval)] [options]
-
-- Reading a value from specified device.
-- `[options]` is defiend by each product model.
-- With `--loop` it will be repeated by `interval` milli-seconds.
-
-### Write operation
-
-    td-usb (model_name) write [args]
-
-- Writing a value to the specified device.
-- `[args]` is defiend by each product model.
-
-
-### Listen operation
-
-    td-usb (model_name) listen [--loop] [options]
-
-- Listening to an event from the specified device.
-- The process waits for an event and, when it is received, prints the event parameters to standard out.
-- With `--loop` option the process will repeat continuously, otherwise terminate.
-- `[options]` is defiend by each product model.
 
 
 

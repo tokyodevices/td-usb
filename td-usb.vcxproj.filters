@@ -62,5 +62,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="License.txt" />
+    <None Include="..\..\..\RubymineProjects\td-usb-docs\src\command.md" />
+    <None Include="..\..\..\RubymineProjects\td-usb-docs\src\models.md" />
+    <None Include="..\..\..\RubymineProjects\td-usb-docs\src\build.md" />
+    <None Include="README_ja.md" />
+    <None Include="docs\quickstart_ja.md" />
+    <None Include="README.md" />
   </ItemGroup>
 </Project>

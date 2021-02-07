@@ -1,4 +1,7 @@
-// device_types.c
+/**
+* @file device_types.c
+*/
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,5 +30,5 @@ void delete_device_type(td_device_t *device_type)
 		}
 		free(device_type);
 		device_type = NULL;
-	}	
+	}
 }
