@@ -1,3 +1,8 @@
+/**
+* @file iws660.c
+* @author s-dz, Tokyo Devices, Inc. (tokyodevices.jp)
+*/
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -5,6 +10,7 @@
 #include <math.h>
 #include "../td-usb.h"
 #include "../tdhid.h"
+#include "../tddevice.h"
 
 #define REPORT_SIZE		16
 
@@ -49,8 +55,8 @@ static td_device_t *export_type(void)
 	dt->vendor_id = 0x16c0;
 	dt->product_id = 0x05df;
 	dt->output_report_size = REPORT_SIZE;
-	dt->read = read;
-	dt->capability1 = CPBLTY1_CHANGE_SERIAL;
+	dt->get = read;
+	dt->init = tddev1_init_operation;
 
 	return dt;
 }

@@ -235,11 +235,16 @@ int TdHidListenReport(int *handle, unsigned char *buffer, int len)
 	int bytesReceived;
 
 	// via EP#1 (interrupt transfer)
-	bytesReceived = usb_interrupt_read((void *)handle, 0x81, (char *)buffer, len, 0);
+	bytesReceived = usb_interrupt_read((void *)handle, 0x81, (char *)&buffer[1], len-1, 0);
 
 	if (bytesReceived < 0)
 	{
-		fprintf(stderr, "Error on receiving report: %s\n", usb_strerror());	
+		if (bytesReceived == -ETIMEDOUT) {
+			fprintf(stderr, "Timeout\n");
+		}
+		else {
+			fprintf(stderr, "Error on receiving report: %s\n", usb_strerror());
+		}
 		return USBOPEN_ERR_IO;
 	}
 

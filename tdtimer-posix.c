@@ -58,12 +58,12 @@ int TdTimer_Start(void pCallback(void *), void *pParam, int Interval)
 	sa.sa_flags = SA_SIGINFO;
 	sa.sa_sigaction = timer_handler;
 	sigemptyset(&sa.sa_mask);
-	if (sigaction(SIGRTMIN, &sa, NULL) == -1) errExit(21, "sigaction");
+	if (sigaction(SIGRTMIN, &sa, NULL) == -1) throw_exception(21, "sigaction");
 
 	/* Create the timer */
 	sev.sigev_notify = SIGEV_SIGNAL;
 	sev.sigev_signo = SIGRTMIN;	
-	if (timer_create(CLOCK_REALTIME, &sev, &timerid) == -1) errExit(54, "timer_create");
+	if (timer_create(CLOCK_REALTIME, &sev, &timerid) == -1) throw_exception(54, "timer_create");
 
 	/* Start the timer */
 	freq_nanosecs = Interval * (1000 * 1000);
@@ -71,7 +71,7 @@ int TdTimer_Start(void pCallback(void *), void *pParam, int Interval)
 	its.it_value.tv_nsec = freq_nanosecs % 1000000000;
 	its.it_interval.tv_sec = its.it_value.tv_sec;
 	its.it_interval.tv_nsec = its.it_value.tv_nsec;
-	if (timer_settime(timerid, 0, &its, NULL) == -1) errExit(55, "timer_settime");
+	if (timer_settime(timerid, 0, &its, NULL) == -1) throw_exception(55, "timer_settime");
 
 	while (1) 
 	{		

@@ -45,6 +45,18 @@
     <ClCompile Include="tdthread-win32.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="devices\iws73X.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="devices\tdpc0201.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="devices\iwt3X3.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tddevice.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tdhid.h">
@@ -57,6 +69,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="tdthread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tddevice.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

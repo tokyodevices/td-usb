@@ -1,16 +1,16 @@
-# 実行例
+# クイックスタート
 
 ## コマンドの実行方法
 
 ### Windows
 
+TD-USBはコマンドラインプログラムのため、マウスでtd-usb.exeファイルをクリックして実行することはできません。
 Windowsに標準で付属されている
 [Windows Power Shell](https://docs.microsoft.com/ja-jp/powershell/) などからコマンドを実行してください。
 
-    % cd (TD-USBをインストールしたフォルダ)
+    % cd (TD-USBをインストールしたフォルダのパス)
     % .\td-usb
 
-※TD-USBはコマンドラインプログラムのため、マウスでtd-usb.exeファイルをクリックして実行することはできません.
 
 ### Linux
 
@@ -18,9 +18,9 @@ Bash等のターミナルからコマンドを実行してください。
 
 ## 値を読み取る
 
-例: TDFA30608から最新のポートの状態を1回読み出す
+例: TDFA30608から最新のポートの状態を読み出す
 
-    > tdusb tdfa30608 read
+    > tdusb tdfa30608 get
     3
 
 ## デバイスのシリアル番号を取得する
@@ -34,12 +34,12 @@ Bash等のターミナルからコマンドを実行してください。
 
 ## シリアル番号を指定して値を読み取る
 
-    > tdusb tdfa30608:1234ABCD read
+    > tdusb tdfa30608:1234ABCD get
     3
 
 ## 5秒ごとに値を読み取る
 
-    > tdusb tdfa30608 read --loop=5000
+    > tdusb tdfa30608 get --loop=5000
     3
     3
     3

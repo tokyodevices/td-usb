@@ -1,4 +1,7 @@
-// iwt120.c
+/**
+* @file iwt120.c
+* @author s-dz, Tokyo Devices, Inc. (tokyodevices.jp)
+*/
 
 #include <stdio.h>
 #include <string.h>
@@ -6,6 +9,7 @@
 #include <stdint.h>
 #include "../td-usb.h"
 #include "../tdhid.h"
+#include "../tddevice.h"
 
 
 #define REPORT_SIZE		16
@@ -67,9 +71,9 @@ static td_device_t *export_type(void)
 	dt->vendor_id = 0x16c0;
 	dt->product_id = 0x05df;
 	dt->output_report_size = REPORT_SIZE;
-	dt->capability1 = CPBLTY1_CHANGE_SERIAL;
-	dt->write = write;
-	dt->read = read;
+	dt->init = tddev1_init_operation;
+	dt->set = write;
+	dt->get = read;
 
 	return dt;
 }

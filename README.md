@@ -16,8 +16,10 @@ CLI(Command Line Interface) for USB-based products of Tokyo Devices, Inc.
 |Model number|Name|`model_name` string|
 |-------|-----|---------------|
 |TDFA30608|[8CH USB Digital IO Module](https://tokyodevices.com/items/284)|`tdfa30608`|
+|TDPC0201|[USB Watchdog timer](https://tokyodevices.com/items/205)|`tdpc0201`|
 |IWT120-USB|[Generic USB LED/Buzzer Module](https://tokyodevices.com/items/201)|`iwt120`|
 |IWS660-CS|[Generic USB Illuminance Meter](https://tokyodevices.com/items/228)|`iws660`|
+|IWS73X-CS|[Generic USB CO2 Meter](https://tokyodevices.com/items/205)|`iws73x`
 
 
 ## Build instructions
@@ -95,14 +97,14 @@ Available operation and option differ depending on the product model.
 
 ### Reading a value from the device
 
-    td-usb (model_name) read [--format=(format)] [--loop=(interval)] [options]
+    td-usb (model_name) get [--format=(format)] [--loop=(interval)] [options]
 
 - With `--loop` it will be repeated by `interval` milli-seconds.
 - `[options]` is defiend by the product model.
 
 ### Writing a value to the device
 
-    td-usb (model_name) write [options]
+    td-usb (model_name) set [options]
 
 - `[options]` is defiend by the product model.
 

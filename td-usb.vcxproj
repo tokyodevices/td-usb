@@ -110,9 +110,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="devices\iws660.c" />
+    <ClCompile Include="devices\iws73X.c" />
     <ClCompile Include="devices\iwt120.c" />
+    <ClCompile Include="devices\iwt3X3.c" />
+    <ClCompile Include="devices\tdpc0201.c" />
     <ClCompile Include="device_types.c" />
     <ClCompile Include="devices\tdfa30608.c" />
+    <ClCompile Include="tddevice.c" />
     <ClCompile Include="tdhid-libusb.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -127,6 +131,7 @@
     <ClCompile Include="td-usb.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="tddevice.h" />
     <ClInclude Include="tdhid.h" />
     <ClInclude Include="tdthread.h" />
     <ClInclude Include="tdtimer.h" />
