@@ -5,9 +5,6 @@ TD-USBは、東京デバイセズのUSB製品を制御するためのコマン�
 - [英語版(English)](README.md)
 - [クイックスタートガイド](docs/quickstart_ja.md)
 
-※TD-USBに対応しないUSB製品については、各製品ごとに制御プログラムが提供されています。
-詳しくは東京デバイセズ各製品のページ・マニュアルを参照してください。
-
 
 ## 動作環境
 
@@ -23,9 +20,9 @@ TD-USBは、東京デバイセズのUSB製品を制御するためのコマン�
 
 ### Windows
 
-[TD-USB コンパイル済みバイナリ Version 0.2](https://s3-ap-northeast-1.amazonaws.com/docs.tokyodevices.jp/tdusb-docs/td-usb-windows-0.2.zip) (ZIP形式)
+[TD-USBリリースページ](https://github.com/tokyodevices/td-usb/releases)
 
-上記リンクよりZIPファイルをダウンロード後、任意のフォルダに解凍してください。
+上記リンクより最新バージョンのZIPファイルをダウンロード後、任意のフォルダに解凍してください。
 アンインストールする場合には、フォルダごと削除してください。
 
 ソースコードからコンパイルする場合には Microsoft Visual Studio が必要です。
@@ -50,12 +47,16 @@ TD-USBは `libusb-dev` パッケージに依存します。
 
 |製品型番|製品名|model_name文字列|
 |-------|-----|---------------|
-|TDFA30608|[USBデジタルIO入力モジュール 8接点 電流ソース・シンク対応型](https://tokyodevices.com/items/284)|`tdfa30608`|
 |IWT120-USB|[汎用 USB 警告ランプ・ブザー モジュール](https://tokyodevices.com/items/201)|`iwt120`|
 |IWS660-CS|[汎用 USB照度センサ (明るさセンサ)](https://tokyodevices.com/items/228)|`iws660`|
 |IWT303-1C|[USBリレー制御モジュール 1接点 10A 250V](https://tokyodevices.com/items/148)|`iwt303`|
 |IWT303-3C|[USBリレー制御モジュール 3接点 10A 250V](https://tokyodevices.com/items/149)|`iwt303`|
 |IWT313-USB|[USBリレー制御モジュール 8接点 6A 250V](https://tokyodevices.com/items/207)|`iwt313`|
+|TDFA30608|[USBデジタルIO入力モジュール 8接点 電流ソース・シンク対応型](https://tokyodevices.com/items/284)|`tdfa30608`|
+|TDPC0201|[USBウォッチドッグ・電源リセットデバイス 「リセットマスター」](https://tokyodevices.com/items/288)|`tdpc0201`|
+
+※TD-USBに対応しないUSB製品については、各製品ごとに制御プログラムが提供されています。
+詳しくは東京デバイセズ各製品のページ・マニュアルを参照してください。
 
 
 ## コマンド仕様

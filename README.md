@@ -15,11 +15,14 @@ CLI(Command Line Interface) for USB-based products of Tokyo Devices, Inc.
 
 |Model number|Name|`model_name` string|
 |-------|-----|---------------|
-|TDFA30608|[8CH USB Digital IO Module](https://tokyodevices.com/items/284)|`tdfa30608`|
-|TDPC0201|[USB Watchdog timer](https://tokyodevices.com/items/205)|`tdpc0201`|
 |IWT120-USB|[Generic USB LED/Buzzer Module](https://tokyodevices.com/items/201)|`iwt120`|
 |IWS660-CS|[Generic USB Illuminance Meter](https://tokyodevices.com/items/228)|`iws660`|
-|IWS73X-CS|[Generic USB CO2 Meter](https://tokyodevices.com/items/205)|`iws73x`
+|IWS73X-CS|[Generic USB CO2 Meter](https://tokyodevices.com/items/205)|`iws73x`|
+|IWT303-1C|[USB SPDT Relay Controller 1CH](https://tokyodevices.com/items/148)|`iwt303`|
+|IWT303-3C|[USB SPDT Relay Controller 3CH](https://tokyodevices.com/items/149)|`iwt303`|
+|IWT313-USB|[USB SPDT Relay Controller 8CH](https://tokyodevices.com/items/149)|`iwt313`|
+|TDFA30608|[8CH USB Digital IO Module](https://tokyodevices.com/items/284)|`tdfa30608`|
+|TDPC0201|["Reset Master" - USB Watchdog](https://tokyodevices.com/items/288)|`tdpc0201`|
 
 
 ## Build instructions
@@ -64,7 +67,7 @@ Run `td-usb` with no-option shows version information.
 
 
     % ./td-usb
-    td-usb version 0.2
+    td-usb version 0.2.3
     Copyright (C) 2020-2021 Tokyo Devices, Inc. (tokyodevices.jp)
     Usage: td-usb model_name[:serial] operation [options]
     Visit https://github.com/tokyodevices/td-usb/ for details
