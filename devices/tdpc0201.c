@@ -145,13 +145,16 @@ static int get(td_context_t* context)
 
 		if (context->format == FORMAT_RAW || context->format == FORMAT_SIMPLE)
 		{
-			printf("%d\n", value);
+			if (i > 0) printf(",");
+			printf("%d", value);
 		}
 		else
 		{
 			throw_exception(EXITCODE_INVALID_FORMAT, "Unknown format");
 		}
 	}
+
+	printf("\n");
 
 	return 0;
 }

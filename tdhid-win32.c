@@ -249,12 +249,6 @@ int TdHidSetReport(int *handle, unsigned char *buffer, int len, uint8_t report_t
 	else if (report_type == USB_HID_REPORT_TYPE_OUTPUT) 
 	{
 		result = HidD_SetOutputReport(handle, buffer, len);
-		/*
-		DWORD i;
-		DEBUG_PRINT(("WriteFile..."));
-		result = WriteFile(handle, buffer, len, &i, NULL);
-		DEBUG_PRINT(("done.\n"));
-		*/
 	}
 	else 
 	{

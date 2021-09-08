@@ -13,6 +13,8 @@
 
 #define REPORT_SIZE					8
 
+#define INPACKET_TRIG				0x01
+
 #define REGNAME_CONTROL_FLAG		"CONTROL_FLAG"
 #define REGNAME_ANTI_CHAT_LEN		"ANTI_CHAT_LEN"
 #define REGNAME_TRIGGER_RISING		"TRIGGER_RISING"
@@ -80,13 +82,16 @@ static int get(td_context_t* context)
 
 		if (context->format == FORMAT_RAW || context->format == FORMAT_SIMPLE)
 		{
-			printf("%d\n", value);
+			if( i > 0 ) printf(",");
+			printf("%d", value);
 		}
 		else
 		{
 			throw_exception(EXITCODE_INVALID_FORMAT, "Unknown format");
 		}
 	}
+
+	printf("\n");
 
 	return 0;
 }
@@ -100,7 +105,18 @@ static int listen(td_context_t* context)
 	if (TdHidListenReport(context->handle, report_buffer, REPORT_SIZE + 1) != 0)
 		throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
 
-	printf("%d,%d\n", report_buffer[1], report_buffer[2]);
+	if (report_buffer[1] != INPACKET_TRIG )
+		throw_exception(EXITCODE_DEVICE_IO_ERROR, "Invalid reply.");
+
+
+	if (context->format == FORMAT_RAW || context->format == FORMAT_SIMPLE)
+	{
+		printf("%d,%d\n", report_buffer[2], report_buffer[4]);
+	}
+	else
+	{
+		throw_exception(EXITCODE_INVALID_FORMAT, "Unknown format");
+	}
 
 	return 0;
 }
@@ -108,7 +124,7 @@ static int listen(td_context_t* context)
 
 static int init(td_context_t* context)
 {
-	tddev2_write_devreg(context, devreg_name2addr(REGNAME_ANTI_CHAT_LEN), 32);
+	tddev2_write_devreg(context, devreg_name2addr(REGNAME_ANTI_CHAT_LEN), 20);
 	tddev2_write_devreg(context, devreg_name2addr(REGNAME_TRIGGER_RISING), 0);
 	tddev2_write_devreg(context, devreg_name2addr(REGNAME_TRIGGER_FALLING), 0);
 	
@@ -124,7 +140,7 @@ static td_device_t *export_type(void)
 	memset(device, 0, sizeof(td_device_t));
 
 	device->vendor_id = TOKYODEVICES_VENDOR_ID;
-	device->product_id = 6000;	
+	device->product_id = 6000;
 	device->output_report_size = REPORT_SIZE;
 	device->input_report_size = REPORT_SIZE;
 	device->get = get;

@@ -55,12 +55,15 @@ int tddev2_save_to_flash(td_context_t* context)
 	if (TdHidSetReport(context->handle, buffer, context->device_type->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT))
 		throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
 
-	DEBUG_PRINT(("Listening ACK reply.\n"));
-	if (TdHidListenReport(context->handle, buffer, context->device_type->input_report_size + 1) != 0)
-		throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
 
-	if ( ! (buffer[1] == INPACKET_ACK && buffer[2] == OUTPACKET_SAVE) )
-		throw_exception(EXITCODE_DEVICE_IO_ERROR, "Invalid reply.");
+	// listen for ACK
+	DEBUG_PRINT(("Listening ACK reply.\n"));
+	while (1)
+	{
+		if (TdHidListenReport(context->handle, buffer, context->device_type->input_report_size + 1) != 0)
+			throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
+		if (buffer[1] == INPACKET_ACK && buffer[2] == OUTPACKET_SAVE) break;
+	}
 
 	printf("Device registers have been saved to flash.\n");
 
@@ -76,7 +79,7 @@ int tddev2_destroy_firmware(td_context_t* context)
 	printf("WARNING: The device will not be available until new firmware is written. Continue? [y/N]");
 	char c = fgetc(stdin);
 
-	if (c == 'y')
+	if (c == 'y' || c == 'Y')
 	{
 		memset(buffer, 0, MAX_REPORT_LENGTH + 1);
 		buffer[1] = OUTPACKET_ERASE; buffer[2] = 0x31; buffer[3] = 0x1C; buffer[4] = 0x66; // ERASE command & magics
@@ -109,12 +112,14 @@ int tddev2_write_devreg(td_context_t* context, uint16_t addr, uint32_t value)
 	if (TdHidSetReport(context->handle, buffer, context->device_type->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT))
 		throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
 
+	// listen for ACK
 	DEBUG_PRINT(("Listening ACK reply.\n"));
-	if (TdHidListenReport(context->handle, buffer, context->device_type->input_report_size + 1) != 0)
-		throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
-
-	if (buffer[1] != INPACKET_ACK)
-		throw_exception(EXITCODE_DEVICE_IO_ERROR, "Invalid reply.");
+	while (1)
+	{
+		if (TdHidListenReport(context->handle, buffer, context->device_type->input_report_size + 1) != 0)
+			throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
+		if (buffer[1] == INPACKET_ACK) break;
+	}
 
 	return 0;
 }
@@ -137,11 +142,12 @@ uint32_t tddev2_read_devreg(td_context_t* context, uint16_t addr)
 
 	// listen for INPACKET_DEVREG
 	DEBUG_PRINT(("Listening INPACKET_DEVREG\n"));
-	if (TdHidListenReport(context->handle, buffer, context->device_type->input_report_size + 1) != 0)
-		throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
-
-	if (buffer[1] != INPACKET_DEVREG || ((buffer[3] << 8) | buffer[2]) != addr)
-		throw_exception(EXITCODE_DEVICE_IO_ERROR, "Invalid reply.");
+	while (1)
+	{
+		if (TdHidListenReport(context->handle, buffer, context->device_type->input_report_size + 1) != 0)
+			throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
+		if (buffer[1] == INPACKET_DEVREG || ((buffer[3] << 8) | buffer[2]) == addr) break;
+	}
 
 	return *(uint32_t*)(&buffer[4]);
 }
