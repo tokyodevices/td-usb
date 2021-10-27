@@ -56,6 +56,8 @@ static int read(td_context_t* context)
 		throw_exception(EXITCODE_INVALID_OPTION, "Unknown option.");
 	}
 
+	fflush(stdout);
+
 	return 0;
 }
 

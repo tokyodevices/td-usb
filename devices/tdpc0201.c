@@ -155,6 +155,7 @@ static int get(td_context_t* context)
 	}
 
 	printf("\n");
+	fflush(stdout);
 
 	return 0;
 }
@@ -168,6 +169,7 @@ static int listen(td_context_t* context)
 		throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
 
 	printf("%d,%d\n", report_buffer[1], report_buffer[2]);
+	fflush(stdout);
 
 	return 0;
 }

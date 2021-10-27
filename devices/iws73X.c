@@ -73,6 +73,7 @@ static int read(td_context_t* context)
 	if (context->c == 0)
 	{
 		printf("%llu,%u,%u,%f,%f\n", epoc, status, gas_ppm, T, RHtrue);
+		fflush(stdout);
 	}
 	else
 	{

@@ -92,6 +92,7 @@ static int get(td_context_t* context)
 	}
 
 	printf("\n");
+	fflush(stdout);
 
 	return 0;
 }
@@ -112,6 +113,7 @@ static int listen(td_context_t* context)
 	if (context->format == FORMAT_RAW || context->format == FORMAT_SIMPLE)
 	{
 		printf("%d,%d\n", report_buffer[2], report_buffer[4]);
+		fflush(stdout);
 	}
 	else
 	{

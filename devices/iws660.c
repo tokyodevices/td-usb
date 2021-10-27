@@ -41,6 +41,8 @@ static int read(td_context_t* context)
 		printf("}\n");
 	}
 
+	fflush(stdout);
+
 	return 0;
 }
 
