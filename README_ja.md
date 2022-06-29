@@ -156,11 +156,35 @@ TD-USBコマンドは、標準出力に結果を書き出します。
 アプリケーションから結果を知りたい場合には、
 外部プログラムとして呼び出す際にパイプによって標準出力を受け取るようにしてください。
 
-### 例
+### 別のコマンドにパイプで接続する例
 
 td-usbコマンドによりIWS450センサの値を1秒ごとにyour-applicationに対して出力
 
     %  td-usb iws450 get --loop=1000 | your-application
 
-その他、各言語からの外部プログラムの起動方法や、標準入出力のリダイレクト方法については
-各マニュアルを参照してください。
+
+### Pythonからの呼び出し例
+
+subprocessを使用し、外部プログラムとしてTD-USBコマンドを起動してください。
+
+    import subprocess
+    output = subprocess.check_output(['td-usb','tdfa30608','list'])
+    print(output)
+
+
+### C# からの呼び出し例
+
+ProcessおよびProcessStartInfoを利用してプロセスを作成し、標準出力をリダイレクトすることで結果を読み取ることができます。
+
+    ProcessStartInfo psInfo = new ProcessStartInfo();
+    psInfo.FileName = "C:\path_to_td-usb\td-usb.exe";
+    psInfo.CreateNoWindow = true;
+    psInfo.UseShellExecute = false;
+    psInfo.RedirectStandardOutput = true;
+    Process p = Process.Start(psInfo);
+    string output = p.StandardOutput.ReadToEnd(); 
+    Debug.Write(output);
+
+### その他のプログラム
+
+各言語からの外部プログラムの起動方法や、標準入出力のリダイレクト方法について、各マニュアルを参照してください。
