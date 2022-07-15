@@ -57,6 +57,9 @@
     <ClCompile Include="tddevice.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="devices\tdfa30604.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tdhid.h">
@@ -78,7 +81,6 @@
   <ItemGroup>
     <None Include="License.txt" />
     <None Include="..\..\..\RubymineProjects\td-usb-docs\src\command.md" />
-    <None Include="..\..\..\RubymineProjects\td-usb-docs\src\models.md" />
     <None Include="..\..\..\RubymineProjects\td-usb-docs\src\build.md" />
     <None Include="README_ja.md" />
     <None Include="docs\quickstart_ja.md" />

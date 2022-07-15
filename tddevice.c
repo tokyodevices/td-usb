@@ -146,6 +146,7 @@ uint32_t tddev2_read_devreg(td_context_t* context, uint16_t addr)
 	{
 		if (TdHidListenReport(context->handle, buffer, context->device_type->input_report_size + 1) != 0)
 			throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
+		DEBUG_PRINT(("Got packet ID=0x%02X\n", buffer[1]));
 		if (buffer[1] == INPACKET_DEVREG || ((buffer[3] << 8) | buffer[2]) == addr) break;
 	}
 

@@ -50,8 +50,8 @@ void throw_exception(int exitcode, const char *msg)
 
 static void print_usage(void)
 {
-	printf("td-usb version 0.2.5\n");
-	printf("Copyright (C) 2020-2021 Tokyo Devices, Inc. (tokyodevices.jp)\n");
+	printf("td-usb version 0.2.6\n");
+	printf("Copyright (C) 2020-2022 Tokyo Devices, Inc. (tokyodevices.jp)\n");
 	printf("Usage: td-usb model_name[:serial] operation [options]\n");
 	printf("Visit https://github.com/tokyodevices/td-usb/ for details\n");
 }

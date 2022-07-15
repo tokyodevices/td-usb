@@ -43,6 +43,7 @@ int open_device(LPHANDLE lpHandle, GUID *pGUID, HDEVINFO deviceInfoList, int i, 
 	SP_DEVICE_INTERFACE_DATA            deviceInfo;
 	DWORD                               size;
 	SP_DEVICE_INTERFACE_DETAIL_DATA     *deviceDetails = NULL;
+	BOOLEAN								bResult;
 
 	deviceInfo.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
 	if (!SetupDiEnumDeviceInterfaces(deviceInfoList, NULL, pGUID, i, &deviceInfo)) {
@@ -52,6 +53,11 @@ int open_device(LPHANDLE lpHandle, GUID *pGUID, HDEVINFO deviceInfoList, int i, 
 
 	SetupDiGetDeviceInterfaceDetail(deviceInfoList, &deviceInfo, NULL, 0, (PDWORD)&size, NULL);
 	deviceDetails = (SP_DEVICE_INTERFACE_DETAIL_DATA *)malloc(size);
+	if (deviceDetails == NULL)
+	{
+		DEBUG_PRINT(("  Open failed.\n"));
+		return 4;
+	}
 	deviceDetails->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
 	SetupDiGetDeviceInterfaceDetail(deviceInfoList, &deviceInfo, deviceDetails, size, (PDWORD)&size, NULL);
 	DEBUG_PRINT(("  Path: \"%s\"\n", deviceDetails->DevicePath));
@@ -70,7 +76,12 @@ int open_device(LPHANDLE lpHandle, GUID *pGUID, HDEVINFO deviceInfoList, int i, 
 	}
 
 	deviceAttributes.Size = sizeof(HIDD_ATTRIBUTES);
-	HidD_GetAttributes(*lpHandle, &deviceAttributes);
+	bResult = HidD_GetAttributes(*lpHandle, &deviceAttributes);
+	if (bResult == FALSE)
+	{
+		DEBUG_PRINT(("  Open failed.\n"));
+		return 5;
+	}
 	DEBUG_PRINT(("  Attributes: vid=%d pid=%d\n", deviceAttributes.VendorID, deviceAttributes.ProductID));
 
 	if (deviceAttributes.VendorID != vendor_id || deviceAttributes.ProductID != product_id) {
@@ -272,8 +283,10 @@ int TdHidGetReport(int *handle, unsigned char *buffer, int len, uint8_t report_t
 		result = HidD_GetFeature(handle, buffer, len);
 	else if (report_type == USB_HID_REPORT_TYPE_INPUT)
 		result = HidD_GetInputReport(handle, buffer, len);
+	else
+		result = FALSE;
 
-	if (result == 0) {
+	if (result == FALSE) {
 		print_last_error_msg();
 		return USBOPEN_ERR_IO;
 	}
@@ -307,7 +320,7 @@ int TdHidListenReport(int *handle, unsigned char *buffer, int len)
 		}
 	}
 
-	CloseHandle(overlapped.hEvent);
+	if( overlapped.hEvent != NULL ) CloseHandle(overlapped.hEvent);
 
 	return (rval == FALSE) ? USBOPEN_ERR_IO : 0;
 }
