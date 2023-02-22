@@ -21,8 +21,9 @@ CLI(Command Line Interface) for USB-based products of Tokyo Devices, Inc.
 |IWT303-1C|[USB SPDT Relay Controller 1CH](https://tokyodevices.com/items/148)|`iwt303`|
 |IWT303-3C|[USB SPDT Relay Controller 3CH](https://tokyodevices.com/items/149)|`iwt303`|
 |IWT313-USB|[USB SPDT Relay Controller 8CH](https://tokyodevices.com/items/149)|`iwt313`|
-|TDFA30608|[8CH USB Digital Input Module](https://tokyodevices.com/items/284)|`tdfa30608`|
-|TDFA30604|4CH USB Digital Input Module|`tdfa30604`|
+|TDFA30608|[8CH USB Digital Input Module with Optical Isolation](https://tokyodevices.com/items/284)|`tdfa30608`|
+|TDFA30604|4CH USB Digital Input Module with Optical Isolation|`tdfa30604`|
+|TDFA50507|7CH USB Digital Output Module with Optical Isolation and Current Sink |`tdfa50507`|
 |TDPC0201|["Reset Master" - USB Watchdog](https://tokyodevices.com/items/288)|`tdpc0201`|
 
 

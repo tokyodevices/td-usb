@@ -51,8 +51,9 @@ TD-USBは `libusb-dev` パッケージに依存します。
 |IWT303-1C|[USBリレー制御モジュール 1接点 10A 250V](https://tokyodevices.com/items/148)|`iwt303`|
 |IWT303-3C|[USBリレー制御モジュール 3接点 10A 250V](https://tokyodevices.com/items/149)|`iwt303`|
 |IWT313-USB|[USBリレー制御モジュール 8接点 6A 250V](https://tokyodevices.com/items/207)|`iwt313`|
-|TDFA30608|[USBデジタルIO入力モジュール 8接点 電流ソース・シンク対応型](https://tokyodevices.com/items/284)|`tdfa30608`|
-|TDFA30604|USBデジタルIO入力モジュール 4接点 電流ソース・シンク対応型|`tdfa30604`|
+|TDFA30608|[USB絶縁デジタルIO入力モジュール 8接点 電流ソース・シンク対応型](https://tokyodevices.com/items/284)|`tdfa30608`|
+|TDFA30604|USB絶縁デジタルIO入力モジュール 4接点 電流ソース・シンク対応型|`tdfa30604`|
+|TDFA50507|USB絶縁デジタルIO出力モジュール 7接点 電流シンクタイプ|`tdfa50507`|
 |TDPC0201|[USBウォッチドッグ・電源リセットデバイス 「リセットマスター」](https://tokyodevices.com/items/288)|`tdpc0201`|
 
 ※TD-USBに対応しないUSB製品については、各製品ごとに制御プログラムが提供されています。
