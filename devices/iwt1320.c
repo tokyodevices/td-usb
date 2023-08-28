@@ -95,7 +95,7 @@ static td_device_t* export_type(void)
 	td_device_t* dt = (td_device_t*)malloc(sizeof(td_device_t));
 	memset(dt, 0, sizeof(td_device_t));
 
-	dt->product_name = (char*)malloc(7);
+	dt->product_name = (char*)malloc(8);
 	strcpy(dt->product_name, "IWT1320");
 
 	dt->vendor_id = 0x16c0;

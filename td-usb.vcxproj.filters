@@ -66,6 +66,9 @@
     <ClCompile Include="devices\iwt1320.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="devices\tdsn450.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tdhid.h">
