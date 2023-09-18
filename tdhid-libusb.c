@@ -239,13 +239,16 @@ int TdHidListenReport(int *handle, unsigned char *buffer, int len)
 
 	if (bytesReceived < 0)
 	{
-		if (bytesReceived == -ETIMEDOUT) {
+		if (bytesReceived == -ETIMEDOUT) 
+		{
 			fprintf(stderr, "Timeout\n");
+			return 2;
 		}
-		else {
+		else
+		{
 			fprintf(stderr, "Error on receiving report: %s\n", usb_strerror());
+			return 1;
 		}
-		return USBOPEN_ERR_IO;
 	}
 
 	return 0;

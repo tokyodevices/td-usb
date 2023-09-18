@@ -84,7 +84,7 @@ int tddev2_destroy_firmware(td_context_t* context)
 		memset(buffer, 0, MAX_REPORT_LENGTH + 1);
 		buffer[1] = OUTPACKET_ERASE; buffer[2] = 0x31; buffer[3] = 0x1C; buffer[4] = 0x66; // ERASE command & magics
 		if (TdHidSetReport(context->handle, buffer, context->device_type->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT))
-			throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
+			throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
 	}
 	else
 	{
@@ -110,14 +110,14 @@ int tddev2_write_devreg(td_context_t* context, uint16_t addr, uint32_t value)
 
 	DEBUG_PRINT(("Sending SET command.\n"));
 	if (TdHidSetReport(context->handle, buffer, context->device_type->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT))
-		throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
+		throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
 
 	// listen for ACK
 	DEBUG_PRINT(("Listening ACK reply.\n"));
 	while (1)
 	{
 		if (TdHidListenReport(context->handle, buffer, context->device_type->input_report_size + 1) != 0)
-			throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
+			throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
 		if (buffer[1] == INPACKET_ACK) break;
 	}
 
@@ -130,25 +130,55 @@ int tddev2_write_devreg(td_context_t* context, uint16_t addr, uint32_t value)
 */
 uint32_t tddev2_read_devreg(td_context_t* context, uint16_t addr)
 {
-	memset(buffer, 0, MAX_REPORT_LENGTH + 1);
+	int result = 0;
+	int retry_count = 0;
+	
 
-	DEBUG_PRINT(("Sending GET command.\n"));
-	buffer[0] = 0x00;        // Dummy report Id
-	buffer[1] = OUTPACKET_GET; // OUTPACKET_GET
-	buffer[2] = addr & 0xFF; // Address LSB
-	buffer[3] = addr >> 8;   // Address MSB
-	if (TdHidSetReport(context->handle, buffer, context->device_type->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT) != 0)
-		throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
-
-	// listen for INPACKET_DEVREG
-	DEBUG_PRINT(("Listening INPACKET_DEVREG\n"));
-	while (1)
+	while ( retry_count < 3 )
 	{
-		if (TdHidListenReport(context->handle, buffer, context->device_type->input_report_size + 1) != 0)
-			throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
-		DEBUG_PRINT(("Got packet ID=0x%02X\n", buffer[1]));
-		if (buffer[1] == INPACKET_DEVREG || ((buffer[3] << 8) | buffer[2]) == addr) break;
+		time_t start= time(NULL);	
+
+		DEBUG_PRINT((">> OUTPACKET_GET (ADDR: 0x%02X)\n", addr));
+		memset(buffer, 0, MAX_REPORT_LENGTH + 1);
+		buffer[0] = 0x00;        // Dummy report Id
+		buffer[1] = OUTPACKET_GET; // OUTPACKET_GET
+		buffer[2] = addr & 0xFF; // Address LSB
+		buffer[3] = addr >> 8;   // Address MSB
+
+		result = TdHidSetReport(context->handle, buffer, context->device_type->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT);
+		if (result != 0) throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
+
+		while (1)
+		{
+			result = TdHidListenReport(context->handle, buffer, context->device_type->input_report_size + 1);
+
+			if (result == 1)
+			{
+				throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
+			}
+			else if (result == 2)
+			{
+				retry_count++; 
+				break; 
+			}
+			else
+			{
+				if (buffer[1] == INPACKET_DEVREG)
+				{
+					DEBUG_PRINT(("<< INPACKET_DEVREG (ADDR: 0x%02X)\n", (buffer[3] << 8) | buffer[2]));
+					if( ((buffer[3] << 8) | buffer[2]) == addr ) return *(uint32_t*)(&buffer[4]);
+				}
+				else
+				{
+					DEBUG_PRINT(("<< PACKET (0x%02X) %02X %02X %02X %02X %02X ...\n",
+						buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6]));
+					if (time(NULL) - start > 1) { retry_count++; break; }
+				}
+			}
+		}
 	}
 
-	return *(uint32_t*)(&buffer[4]);
+	throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
+
+	return 0;
 }

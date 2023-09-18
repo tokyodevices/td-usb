@@ -14,7 +14,6 @@
 #include "tdhid.h"
 
 
-static OVERLAPPED overlapped;
 
 static void print_last_error_msg()
 {
@@ -65,6 +64,7 @@ int open_device(LPHANDLE lpHandle, GUID *pGUID, HDEVINFO deviceInfoList, int i, 
 	*lpHandle = CreateFile(deviceDetails->DevicePath, 
 		GENERIC_READ | GENERIC_WRITE,
 		FILE_SHARE_READ | FILE_SHARE_WRITE,
+//		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL);
 
 	free(deviceDetails);
@@ -88,7 +88,7 @@ int open_device(LPHANDLE lpHandle, GUID *pGUID, HDEVINFO deviceInfoList, int i, 
 		CloseHandle(*lpHandle);
 		*lpHandle = INVALID_HANDLE_VALUE;
 		return 3;
-	}	
+	}
 
 	return 0;
 }
@@ -288,7 +288,7 @@ int TdHidGetReport(int *handle, unsigned char *buffer, int len, uint8_t report_t
 
 	if (result == FALSE) {
 		print_last_error_msg();
-		return USBOPEN_ERR_IO;
+		return 2;
 	}
 	else {
 		return 0;
@@ -298,29 +298,27 @@ int TdHidGetReport(int *handle, unsigned char *buffer, int len, uint8_t report_t
 
 int TdHidListenReport(int *handle, unsigned char *buffer, int len)
 {
+	OVERLAPPED overlapped;
 	DWORD nRead = 0;
-	BOOL rval = FALSE;
 
-	memset(&overlapped, 0, sizeof(OVERLAPPED));	
-	overlapped.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	memset(&overlapped, 0, sizeof(overlapped));
 
-	rval = ReadFile(handle, (LPVOID)buffer, len, &nRead, &overlapped);
-	
-	if (rval == FALSE)
+	if ( ReadFile(handle, (LPVOID)buffer, len, &nRead, &overlapped) == FALSE )
 	{
-		DWORD err = GetLastError();
-		if (err == ERROR_IO_PENDING) 
+		if (GetLastError() == ERROR_IO_PENDING)
 		{
-			GetOverlappedResult(handle, &overlapped, &nRead, TRUE);
-			rval = TRUE;
+			if ( WaitForSingleObject(handle, DEFAULT_TIMEOUT) != WAIT_OBJECT_0 )
+			{				
+				CancelIo(handle);
+				return 2; // Timeout
+			}
 		}
-		else 
+		else
 		{
-			print_last_error_msg();			
+			print_last_error_msg();
+			return 1;
 		}
 	}
-
-	if( overlapped.hEvent != NULL ) CloseHandle(overlapped.hEvent);
-
-	return (rval == FALSE) ? USBOPEN_ERR_IO : 0;
+	
+	return 0;
 }

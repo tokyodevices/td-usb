@@ -64,8 +64,7 @@ static int set(td_context_t* context)
 static int get(td_context_t* context)
 {
 	uint8_t buffer[REPORT_SIZE + 1];
-	uint16_t value, cal;
-	double L;
+	uint16_t value;
 
 	if (TdHidGetReport(context->handle, buffer, REPORT_SIZE + 1, USB_HID_REPORT_TYPE_FEATURE))
 		throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
