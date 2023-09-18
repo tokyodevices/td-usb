@@ -1,9 +1,11 @@
+
+[英語版(English)](README.md)
+
 # はじめに
 
 TD-USBは、東京デバイセズのUSB製品を制御するためのコマンドラインインタフェースです。
 
-- [英語版(English)](README.md)
-- [クイックスタートガイド](docs/quickstart_ja.md)
+すぐに使ってみたい方は、[クイックスタートガイド](docs/quickstart_ja.md)を参照してください。
 
 
 ## 動作環境
@@ -47,13 +49,15 @@ TD-USBは `libusb-dev` パッケージに依存します。
 |製品型番|製品名|model_name文字列|
 |-------|-----|---------------|
 |IWT120-USB|[汎用 USB 警告ランプ・ブザー モジュール](https://tokyodevices.com/items/201)|`iwt120`|
+|IWT1320-USB|[ＬＥＤ・ブザー付　汎用ＵＳＢスライダー入力デバイス](https://tokyodevices.com/items/271)|`iwt1320`|
 |IWS660-CS|[汎用 USB照度センサ (明るさセンサ)](https://tokyodevices.com/items/228)|`iws660`|
+|IWS73X-CS|[USB CO2(二酸化炭素)濃度・温度・湿度センサ 「エア・アナライザ」](https://tokyodevices.com/items/205)|`iws73x`|
 |IWT303-1C|[USBリレー制御モジュール 1接点 10A 250V](https://tokyodevices.com/items/148)|`iwt303`|
 |IWT303-3C|[USBリレー制御モジュール 3接点 10A 250V](https://tokyodevices.com/items/149)|`iwt303`|
 |IWT313-USB|[USBリレー制御モジュール 8接点 6A 250V](https://tokyodevices.com/items/207)|`iwt313`|
 |TDFA30608|[USB絶縁デジタルIO入力モジュール 8接点 電流ソース・シンク対応型](https://tokyodevices.com/items/284)|`tdfa30608`|
 |TDFA30604|USB絶縁デジタルIO入力モジュール 4接点 電流ソース・シンク対応型|`tdfa30604`|
-|TDFA50507|USB絶縁デジタルIO出力モジュール 7接点 電流シンクタイプ|`tdfa50507`|
+|TDFA50507|[USB絶縁デジタルIO出力モジュール 7接点 電流シンクタイプ](https://tokyodevices.com/items/308)|`tdfa50507`|
 |TDFA60220|USB 絶縁 4-20mA 電流計測用 ADコンバータ|`tdfa60220`|
 |TDPC0201|[USBウォッチドッグ・電源リセットデバイス 「リセットマスター」](https://tokyodevices.com/items/288)|`tdpc0201`|
 
@@ -163,12 +167,23 @@ PCに同じモデルの製品が複数台接続されている時に使用しま
     WARNING: The device will not be available until new firmware is written. Continue? [y/N]
 
 
-### 終了コード
+### 終了コードとエラー
 
 TD-USBコマンドは正常に終了すると終了コード0を返します。
-0以外の場合にはエラーによる異常終了です。
-エラーの情報は標準エラー出力に書き出されます。
+0以外の場合にはエラーによる異常終了です。値と意味は次の通りです。
+エラーの詳細は標準エラー出力に書き出されます。
 
+
+|コード|名称                        |説明                                                       |
+|------|----------------------------|-----------------------------------------------------------|
+|0     |NO_ERROR                    |正常にプロセスが終了しました.                              |
+|2     |UNKNOWN_DEVICE              |不明な`model_name`が指定されました.                      |
+|3     |UNKNOWN_OPERATION           |不明な`operation`が指定されました.                       |
+|4     |OPERATION_NOT_SUPPORTED     |指定された`operation`は指定デバイスでは非対応です.        |
+|6     |INVALID_OPTION              |オプションの指定が不正です.                                |
+|11    |DEVICE_OPEN_ERROR           |デバイスのオープンに失敗しました.                          |
+|12    |DEVICE_IO_ERROR             |デバイスとの通信に失敗しました.                            |
+|13    |INVALID_FORMAT              |`--format`で指定された値は指定デバイスでは利用できません. |
 
 
 ## ユーザアプリケーションとの統合
@@ -212,3 +227,9 @@ ProcessおよびProcessStartInfoを利用してプロセスを作成し、標準
 ### その他のプログラム
 
 各言語からの外部プログラムの起動方法や、標準入出力のリダイレクト方法について、各マニュアルを参照してください。
+
+
+## ライセンス
+
+TD-USB のライセンスは [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) です。
+

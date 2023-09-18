@@ -1,8 +1,10 @@
+
+[Japanese(“ú–{Œê)](README_ja.md)
+
 # TD-USB
 
 CLI(Command Line Interface) for USB-based products of Tokyo Devices, Inc.
 
-[Japanese(Nihongo)](README_ja.md)
 
 ## Target platform
 
@@ -16,6 +18,7 @@ CLI(Command Line Interface) for USB-based products of Tokyo Devices, Inc.
 |Model number|Name|`model_name` string|
 |-------|-----|---------------|
 |IWT120-USB|[Generic USB LED/Buzzer Module](https://tokyodevices.com/items/201)|`iwt120`|
+|IWT1320-USB|[General Purpose USB Slider Input Device with integrated LED and Buzzer](https://tokyodevices.com/items/271)|`iwt1320`|
 |IWS660-CS|[Generic USB Illuminance Meter](https://tokyodevices.com/items/228)|`iws660`|
 |IWS73X-CS|[Generic USB CO2 Meter](https://tokyodevices.com/items/205)|`iws73x`|
 |IWT303-1C|[USB SPDT Relay Controller 1CH](https://tokyodevices.com/items/148)|`iwt303`|
@@ -137,6 +140,20 @@ Available operation and option differ depending on the product model.
 
 - After this operation the device will be unavailable until new firmware is written.
 
+
+
+## Exit code and error definition
+
+|Exit Code|Name                        |Description                                 |
+|---------|----------------------------|--------------------------------------------|
+|0        |NO_ERROR                    |The process terminated successfully.|
+|2        |UNKNOWN_DEVICE              |`model_name` is invalid.  |
+|3        |UNKNOWN_OPERATION           |`operation` is invalid.    |
+|4        |OPERATION_NOT_SUPPORTED     |Specified `operation` is not supproted for the device. |
+|6        |INVALID_OPTION              |Invalid option format. |
+|11       |DEVICE_OPEN_ERROR           |Failed to open the device. |
+|12       |DEVICE_IO_ERROR             |Failed to communicate to the device. |
+|13       |INVALID_FORMAT              |Specified `--format` is not available for the device. |
 
 
 
