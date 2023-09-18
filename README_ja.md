@@ -58,7 +58,9 @@ TD-USBは `libusb-dev` パッケージに依存します。
 |TDFA30608|[USB絶縁デジタルIO入力モジュール 8接点 電流ソース・シンク対応型](https://tokyodevices.com/items/284)|`tdfa30608`|
 |TDFA30604|USB絶縁デジタルIO入力モジュール 4接点 電流ソース・シンク対応型|`tdfa30604`|
 |TDFA50507|[USB絶縁デジタルIO出力モジュール 7接点 電流シンクタイプ](https://tokyodevices.com/items/308)|`tdfa50507`|
+|TDFA60220|USB 絶縁 4-20mA 電流計測用 ADコンバータ|`tdfa60220`|
 |TDPC0201|[USBウォッチドッグ・電源リセットデバイス 「リセットマスター」](https://tokyodevices.com/items/288)|`tdpc0201`|
+
 
 ※TD-USBに対応しないUSB製品については、各製品ごとに制御プログラムが提供されています。
 詳しくは東京デバイセズ各製品のページ・マニュアルを参照してください。

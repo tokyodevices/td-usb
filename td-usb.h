@@ -2,7 +2,7 @@
 
 #define __STDC_WANT_LIB_EXT1__
 
-#define TOKYODEVICES_VENDOR_ID					13038 // 0x32EE
+#define TOKYODEVICES_VENDOR_ID				13038 // 0x32EE
 
 #define OPERATION_LIST						0
 #define OPERATION_LISTEN					1
@@ -34,6 +34,10 @@
 #define EXITCODE_DEVICE_OPEN_ERROR				11
 #define EXITCODE_DEVICE_IO_ERROR				12
 #define EXITCODE_INVALID_FORMAT					13
+#define EXITCODE_INVALID_RANGE					14
+
+#define ERROR_MSG_DEVICE_IO_ERROR				"USB I/O Error."
+#define ERROR_MSG_INVALID_FORMAT				"Invalid format."
 
 #define MAX_REPORT_LENGTH						64
 

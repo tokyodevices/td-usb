@@ -12,7 +12,7 @@
 #define USBRQ_HID_GET_REPORT			0x01
 #define USBRQ_HID_SET_REPORT			0x09
 
-#define DEFAULT_TIMEOUT					1000
+#define DEFAULT_TIMEOUT					3000
 
 
 int TdHidListDevices(uint16_t vendor, uint16_t product, const char *name, char *lpBuffer, int szBuffer);
