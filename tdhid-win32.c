@@ -270,7 +270,7 @@ int TdHidSetReport(int *handle, unsigned char *buffer, int len, uint8_t report_t
 		print_last_error_msg();
 		return USBOPEN_ERR_IO;
 	} else {
-		return 0;
+		return TDHID_SUCCESS;
 	}	
 }
 
@@ -291,7 +291,7 @@ int TdHidGetReport(int *handle, unsigned char *buffer, int len, uint8_t report_t
 		return 2;
 	}
 	else {
-		return 0;
+		return TDHID_SUCCESS;
 	}
 }
 
@@ -310,15 +310,15 @@ int TdHidListenReport(int *handle, unsigned char *buffer, int len)
 			if ( WaitForSingleObject(handle, DEFAULT_TIMEOUT) != WAIT_OBJECT_0 )
 			{				
 				CancelIo(handle);
-				return 2; // Timeout
+				return TDHID_ERR_TIMEOUT; // Timeout
 			}
 		}
 		else
 		{
 			print_last_error_msg();
-			return 1;
+			return TDHID_ERR_IO;
 		}
 	}
 	
-	return 0;
+	return TDHID_SUCCESS;
 }

@@ -136,7 +136,7 @@ static int listen(td_context_t* context)
 
 	while (1)
 	{
-		if ((TdHidListenReport(context->handle, buffer, REPORT_SIZE + 1)) != 0)
+		if ((TdHidListenReport(context->handle, buffer, REPORT_SIZE + 1)) != TDHID_SUCCESS)
 			throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
 		if (buffer[1] == INPACKET_DUMP) break;
 	}		

@@ -162,11 +162,14 @@ static int get(td_context_t* context)
 
 
 static int listen(td_context_t* context)
-{	
+{
+	int result;
 	memset(report_buffer, 0, REPORT_SIZE + 1);
 
-	if (TdHidListenReport(context->handle, report_buffer, REPORT_SIZE + 1) != 0)
-		throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
+	while ((result = TdHidListenReport(context->handle, report_buffer, REPORT_SIZE + 1)) == TDHID_ERR_TIMEOUT);
+
+	if (result == TDHID_ERR_IO)
+		throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
 
 	printf("%d,%d\n", report_buffer[1], report_buffer[2]);
 	fflush(stdout);

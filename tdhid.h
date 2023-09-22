@@ -14,6 +14,11 @@
 
 #define DEFAULT_TIMEOUT					3000
 
+#define TDHID_SUCCESS					0
+#define TDHID_ERR_IO					1
+#define TDHID_ERR_TIMEOUT				2
+
+
 
 int TdHidListDevices(uint16_t vendor, uint16_t product, const char *name, char *lpBuffer, int szBuffer);
 int *TdHidOpenDevice(uint16_t vendor_id, uint16_t product_id, const char *name, char *serial);

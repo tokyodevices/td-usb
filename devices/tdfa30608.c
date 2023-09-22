@@ -100,15 +100,17 @@ static int get(td_context_t* context)
 
 static int listen(td_context_t* context)
 {
+	int result;
 	unsigned char report_buffer[REPORT_SIZE + 1];
 	memset(report_buffer, 0, REPORT_SIZE + 1);
 
-	if (TdHidListenReport(context->handle, report_buffer, REPORT_SIZE + 1) != 0)
-		throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
+	while ((result = TdHidListenReport(context->handle, report_buffer, REPORT_SIZE + 1)) == TDHID_ERR_TIMEOUT);
+
+	if (result == TDHID_ERR_IO)
+		throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
 
 	if (report_buffer[1] != INPACKET_TRIG )
 		throw_exception(EXITCODE_DEVICE_IO_ERROR, "Invalid reply.");
-
 
 	if (context->format == FORMAT_RAW || context->format == FORMAT_SIMPLE)
 	{
@@ -117,7 +119,7 @@ static int listen(td_context_t* context)
 	}
 	else
 	{
-		throw_exception(EXITCODE_INVALID_FORMAT, "Unknown format");
+		throw_exception(EXITCODE_INVALID_FORMAT, ERROR_MSG_INVALID_FORMAT);
 	}
 
 	return 0;

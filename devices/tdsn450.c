@@ -137,11 +137,14 @@ static int read(td_context_t* context)
 
 static int listen(td_context_t* context)
 {
+	int result;
 	unsigned char in_report_buffer[IN_REPORT_SIZE + 1];
 	memset(in_report_buffer, 0, IN_REPORT_SIZE + 1);
 
-	if (TdHidListenReport(context->handle, in_report_buffer, IN_REPORT_SIZE + 1) != 0)
-		throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
+	while ((result = TdHidListenReport(context->handle, in_report_buffer, IN_REPORT_SIZE + 1)) == TDHID_ERR_TIMEOUT);
+
+	if (result == TDHID_ERR_IO)
+			throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
 
 	if (context->format == FORMAT_RAW || context->format == FORMAT_SIMPLE)
 	{

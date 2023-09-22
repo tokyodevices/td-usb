@@ -33,7 +33,7 @@ int tddev1_init_operation(td_context_t* context)
 
 	if (TdHidSetReport(context->handle, buffer, context->device_type->output_report_size + 1, USB_HID_REPORT_TYPE_FEATURE))
 	{
-		throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
+		throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
 	}
 
 	printf("Set serial number to %s\n", &buffer[2]);
@@ -53,7 +53,7 @@ int tddev2_save_to_flash(td_context_t* context)
 
 	DEBUG_PRINT(("Sending SAVE command.\n"));
 	if (TdHidSetReport(context->handle, buffer, context->device_type->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT))
-		throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
+		throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
 
 
 	// listen for ACK
@@ -61,7 +61,7 @@ int tddev2_save_to_flash(td_context_t* context)
 	while (1)
 	{
 		if (TdHidListenReport(context->handle, buffer, context->device_type->input_report_size + 1) != 0)
-			throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
+			throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
 		if (buffer[1] == INPACKET_ACK && buffer[2] == OUTPACKET_SAVE) break;
 	}
 
@@ -146,17 +146,17 @@ uint32_t tddev2_read_devreg(td_context_t* context, uint16_t addr)
 		buffer[3] = addr >> 8;   // Address MSB
 
 		result = TdHidSetReport(context->handle, buffer, context->device_type->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT);
-		if (result != 0) throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
+		if (result != TDHID_SUCCESS) throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
 
 		while (1)
 		{
 			result = TdHidListenReport(context->handle, buffer, context->device_type->input_report_size + 1);
 
-			if (result == 1)
+			if (result == TDHID_ERR_IO)
 			{
 				throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
 			}
-			else if (result == 2)
+			else if (result == TDHID_ERR_TIMEOUT)
 			{
 				retry_count++; 
 				break; 
