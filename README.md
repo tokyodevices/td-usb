@@ -1,5 +1,5 @@
 
-[Japanese(“ú–{Œê)](README_ja.md)
+[Japanese(Nihongo)](README_ja.md)
 
 # TD-USB
 
@@ -26,8 +26,9 @@ CLI(Command Line Interface) for USB-based products of Tokyo Devices, Inc.
 |IWT313-USB|[USB SPDT Relay Controller 8CH](https://tokyodevices.com/items/149)|`iwt313`|
 |TDFA30608|[8CH USB Digital Input Module with Optical Isolation](https://tokyodevices.com/items/284)|`tdfa30608`|
 |TDFA30604|4CH USB Digital Input Module with Optical Isolation|`tdfa30604`|
-|TDFA50507|7CH USB Digital Output Module with Optical Isolation and Current Sink |`tdfa50507`|
-|TDFA60220|USB A/D Converter for 4-20mA Current Measurement with Galvanic Isolation|`tdfa60220`|
+|TDFA50507|[7CH USB Digital Output Module with Optical Isolation and Current Sink](https://tokyodevices.com/items/308)|`tdfa50507`|
+|TDFA60220|[USB AD Converter For 4-20mA Analog Current Signal with Galvanic Isolation](https://tokyodevices.com/items/311)|`tdfa60220`|
+|TDFA60250|[USB AD Converter For 0-5V/1-5V Analog Signal with Galvanic Isolation](https://tokyodevices.com/items/314)|`tdfa60250`|
 |TDPC0201|["Reset Master" - USB Watchdog](https://tokyodevices.com/items/288)|`tdpc0201`|
 
 

@@ -100,6 +100,7 @@
     <ClCompile Include="devices\iwt3X3.c" />
     <ClCompile Include="devices\tdfa50507.c" />
     <ClCompile Include="devices\tdfa60220.c" />
+    <ClCompile Include="devices\tdfa60250.c" />
     <ClCompile Include="devices\tdpc0201.c" />
     <ClCompile Include="devices\tdsn450.c" />
     <ClCompile Include="device_types.c" />

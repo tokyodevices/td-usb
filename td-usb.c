@@ -50,7 +50,7 @@ void throw_exception(int exitcode, const char *msg)
 
 static void print_usage(void)
 {
-	printf("TD-USB version 0.2.10\n");
+	printf("TD-USB version 0.2.12\n");
 	printf("Copyright (C) 2020-2023 Tokyo Devices, Inc. (tokyodevices.jp)\n");
 	printf("Usage: td-usb model_name[:serial] operation [options]\n");
 	printf("Visit https://github.com/tokyodevices/td-usb/ for details\n");
@@ -65,6 +65,7 @@ static void parse_args(int argc, char *argv[])
 	char *p;
 
 	context->format = FORMAT_SIMPLE;
+	context->skip = 0;
 	context->interval = 0;
 	context->loop = FALSE;
 
@@ -115,13 +116,15 @@ static void parse_args(int argc, char *argv[])
 				if (strncmp("--format", argv[i], 8) == 0)
 				{
 					p = strchr(argv[i], '=');
-					if (p != NULL)
+					if (p == NULL)
 					{
-						if (strcmp("json", p + 1) == 0) context->format = FORMAT_JSON;
-						if (strcmp("raw", p + 1) == 0) context->format = FORMAT_RAW;
-						if (strcmp("csv", p + 1) == 0) context->format = FORMAT_CSV; // reserved.
-						if (strcmp("tsv", p + 1) == 0) context->format = FORMAT_TSV; // reserved.
+						fprintf(stderr, "No format is specified.\n");
+						throw_exception(EXITCODE_INVALID_OPTION, NULL);
 					}
+					if (strcmp("json", p + 1) == 0) context->format = FORMAT_JSON;
+					if (strcmp("raw", p + 1) == 0) context->format = FORMAT_RAW;
+					if (strcmp("csv", p + 1) == 0) context->format = FORMAT_CSV; // reserved.
+					if (strcmp("tsv", p + 1) == 0) context->format = FORMAT_TSV; // reserved.
 				}
 				else if (strncmp("--loop", argv[i], 6) == 0)
 				{
@@ -140,6 +143,22 @@ static void parse_args(int argc, char *argv[])
 					else
 					{
 						context->interval = OPTION_DEFAULT_INTERVAL;
+					}
+				}
+				else if (strncmp("--skip", argv[i], 6) == 0)
+				{
+					p = strchr(argv[i], '=');
+					if (p == NULL)
+					{
+						fprintf(stderr, "Skip count is not set.\n");
+						throw_exception(EXITCODE_INVALID_OPTION, NULL);
+					}
+
+					context->skip = atoi(p + 1);
+					if (context->skip < OPTION_MIN_SKIP)
+					{
+						fprintf(stderr, "Skip count must be >= %d.\n", OPTION_MIN_SKIP);
+						throw_exception(EXITCODE_INVALID_OPTION, NULL);
 					}
 				}
 			}

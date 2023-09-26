@@ -22,6 +22,7 @@
 
 #define OPTION_DEFAULT_INTERVAL					1000
 #define OPTION_MIN_INTERVAL						50
+#define OPTION_MIN_SKIP							1
 
 #define	FALSE									0
 #define	TRUE									1
@@ -72,6 +73,7 @@ typedef struct
 	int* handle;
 	td_device_t* device_type;
 	int interval;
+	int skip;
 	uint8_t operation;
 	uint8_t format;
 	uint8_t loop;
