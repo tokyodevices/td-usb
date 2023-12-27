@@ -22,11 +22,11 @@
     <ProjectGuid>{E07E73E6-5952-4B2A-9C99-97B8BAA754B6}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <ProjectName>td-usb</ProjectName>
-    <WindowsTargetPlatformVersion>7.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <PlatformToolset>v141_xp</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <UseDebugLibraries>true</UseDebugLibraries>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -35,7 +35,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -101,6 +101,7 @@
     <ClCompile Include="devices\tdfa50507.c" />
     <ClCompile Include="devices\tdfa60220.c" />
     <ClCompile Include="devices\tdfa60250.c" />
+    <ClCompile Include="devices\tdfa6032.c" />
     <ClCompile Include="devices\tdpc0201.c" />
     <ClCompile Include="devices\tdsn450.c" />
     <ClCompile Include="device_types.c" />

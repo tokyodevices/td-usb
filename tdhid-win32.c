@@ -116,7 +116,7 @@ int TdHidListDevices(UINT16 vendor_id, UINT16 product_id, LPCSTR product_name, L
 			DEBUG_PRINT(("  No such device.\n"));
 			break;
 		}
-		if (handle == INVALID_HANDLE_VALUE) {
+		if (result != 0) {
 			continue;
 		}
 
@@ -189,7 +189,7 @@ int *TdHidOpenDevice(UINT16 vendor_id, UINT16 product_id, LPCSTR product_name, L
 
 		result = open_device(&handle, &hidGuid, deviceInfoList, i, vendor_id, product_id);
 		if (result == 1) break; // no device found anymore
-		if (handle == INVALID_HANDLE_VALUE) continue;
+		if (result != 0) continue;
 
 		if (product_name != NULL)
 		{
@@ -251,6 +251,8 @@ void TdHidCloseDevice(int *handle)
 
 int TdHidSetReport(int *handle, unsigned char *buffer, int len, uint8_t report_type)
 {
+	OVERLAPPED overlapped;
+	DWORD nWrite = 0;
 	BOOLEAN result = 0;
 	
 	if (report_type == USB_HID_REPORT_TYPE_FEATURE) 
