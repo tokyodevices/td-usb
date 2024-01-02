@@ -170,7 +170,7 @@ int *TdHidOpenDevice(uint16_t vendor, uint16_t product, const char *product_name
 					else
 					{
 						//fprintf(stdout, "Got serial: %s\n", string);
-						if (strcmp(string, serial) == 0) {
+						if (strcmp(string, serial) != 0) {
 							usb_close(handle); continue;
 						}
 					}
