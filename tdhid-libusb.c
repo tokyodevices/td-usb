@@ -40,7 +40,7 @@ static int usbhidGetStringAscii(usb_dev_handle *dev, int index, char *buf, int b
 
 int TdHidListDevices(uint16_t vendor, uint16_t product, const char *product_name, char *lpBuffer, int szBuffer)
 {
-	char tmp_buffer[128]; // For USB devices, the maximum string length is 126 wide characters (not including the terminating NULL character). (by MSDN)
+	char tmp_buffer[256]; // For USB devices, the maximum string length is 126 wide characters (not including the terminating NULL character). (by MSDN)
 	int	buffer_count = 0;
 
 	struct usb_bus      *bus;
@@ -154,6 +154,7 @@ int *TdHidOpenDevice(uint16_t vendor, uint16_t product, const char *product_name
 						if (strcmp(string, product_name) != 0) 
 						{
 							usb_close(handle);
+							handle = NULL;
 							continue;
 						}
 					}
@@ -171,7 +172,9 @@ int *TdHidOpenDevice(uint16_t vendor, uint16_t product, const char *product_name
 					{
 						//fprintf(stdout, "Got serial: %s\n", string);
 						if (strcmp(string, serial) != 0) {
-							usb_close(handle); continue;
+							usb_close(handle);
+							handle = NULL;
+							continue;
 						}
 					}
 				}
