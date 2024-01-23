@@ -63,7 +63,9 @@ udevのルールの追加等の設定が必要になりますので、Linuxの�
 |TDFA50507|[USB絶縁デジタルIO出力モジュール 7接点 電流シンクタイプ](https://tokyodevices.com/items/308)|`tdfa50507`|
 |TDFA60220|[絶縁型 4-20mA アナログ信号対応 USB電流計・ADコンバータ](https://tokyodevices.com/items/311)|`tdfa60220`|
 |TDFA60250|[絶縁型 0-5V 1-5V アナログ信号対応 USB電圧計・ADコンバータ](https://tokyodevices.com/items/314)|`tdfa60250`|
+|TDFA6032A|[0-20mA/4-20mA電流信号用 USBアナログ出力ユニット 絶縁タイプ](https://tokyodevices.com/items/315)|`tdfa6032`|
 |TDPC0201|[USBウォッチドッグ・電源リセットデバイス 「リセットマスター」](https://tokyodevices.com/items/288)|`tdpc0201`|
+|TDPC0205|["時計ドングル" USB リアルタイムクロック(RTC)  現在時刻取得・同期用 電池バックアップ](https://tokyodevices.com/items/319)|`tdpc0205`|
 
 
 ※TD-USBに対応しないUSB製品については、各製品ごとに制御プログラムが提供されています。

@@ -1,5 +1,5 @@
 
-[Japanese(Nihongo)](README_ja.md)
+[Japanese(“ú–{Œê)](README_ja.md)
 
 # TD-USB
 
@@ -17,19 +17,21 @@ CLI(Command Line Interface) for USB-based products of Tokyo Devices, Inc.
 
 |Model number|Name|`model_name` string|
 |-------|-----|---------------|
-|IWT120-USB|[Generic USB LED/Buzzer Module](https://tokyodevices.com/items/201)|`iwt120`|
-|IWT1320-USB|[General Purpose USB Slider Input Device with integrated LED and Buzzer](https://tokyodevices.com/items/271)|`iwt1320`|
-|IWS660-CS|[Generic USB Illuminance Meter](https://tokyodevices.com/items/228)|`iws660`|
-|IWS73X-CS|[Generic USB CO2 Meter](https://tokyodevices.com/items/205)|`iws73x`|
-|IWT303-1C|[USB SPDT Relay Controller 1CH](https://tokyodevices.com/items/148)|`iwt303`|
-|IWT303-3C|[USB SPDT Relay Controller 3CH](https://tokyodevices.com/items/149)|`iwt303`|
-|IWT313-USB|[USB SPDT Relay Controller 8CH](https://tokyodevices.com/items/149)|`iwt313`|
-|TDFA30608|[8CH USB Digital Input Module with Optical Isolation](https://tokyodevices.com/items/284)|`tdfa30608`|
+|IWT120-USB|[Generic USB LED/Buzzer Module](https://en.tokyodevices.com/items/201)|`iwt120`|
+|IWT1320-USB|[General Purpose USB Slider Input Device with integrated LED and Buzzer](https://en.tokyodevices.com/items/271)|`iwt1320`|
+|IWS660-CS|[Generic USB Illuminance Meter](https://en.tokyodevices.com/items/228)|`iws660`|
+|IWS73X-CS|[Generic USB CO2 Meter](https://en.tokyodevices.com/items/205)|`iws73x`|
+|IWT303-1C|[USB SPDT Relay Controller 1CH](https://en.tokyodevices.com/items/148)|`iwt303`|
+|IWT303-3C|[USB SPDT Relay Controller 3CH](https://en.tokyodevices.com/items/149)|`iwt303`|
+|IWT313-USB|[USB SPDT Relay Controller 8CH](https://en.tokyodevices.com/items/149)|`iwt313`|
+|TDFA30608|[8CH USB Digital Input Module with Optical Isolation](https://en.tokyodevices.com/items/284)|`tdfa30608`|
 |TDFA30604|4CH USB Digital Input Module with Optical Isolation|`tdfa30604`|
-|TDFA50507|[7CH USB Digital Output Module with Optical Isolation and Current Sink](https://tokyodevices.com/items/308)|`tdfa50507`|
-|TDFA60220|[USB AD Converter For 4-20mA Analog Current Signal with Galvanic Isolation](https://tokyodevices.com/items/311)|`tdfa60220`|
-|TDFA60250|[USB AD Converter For 0-5V/1-5V Analog Signal with Galvanic Isolation](https://tokyodevices.com/items/314)|`tdfa60250`|
-|TDPC0201|["Reset Master" - USB Watchdog](https://tokyodevices.com/items/288)|`tdpc0201`|
+|TDFA50507|[7CH USB Digital Output Module with Optical Isolation and Current Sink](https://en.tokyodevices.com/items/308)|`tdfa50507`|
+|TDFA60220|[USB AD Converter For 4-20mA Analog Current Signal with Galvanic Isolation](https://en.tokyodevices.com/items/311)|`tdfa60220`|
+|TDFA60250|[USB AD Converter For 0-5V/1-5V Analog Signal with Galvanic Isolation](https://en.tokyodevices.com/items/314)|`tdfa60250`|
+|TDFA6032A|[USB Analog Output, 0-20mA/4-20mA Current Signal, Galvanic Isolation](https://en.tokyodevices.com/items/315)|`tdfa6032`|
+|TDPC0201|["Reset Master" - a USB Watchdog](https://en.tokyodevices.com/items/288)|`tdpc0201`|
+|TDPC0205|["Clock Dongle" - a USB Real-Time Clock for Current Time Sync., Battery Backup](https://en.tokyodevices.com/items/319)|`tdpc0205`|
 
 
 ## Build instructions
