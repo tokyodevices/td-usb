@@ -22,7 +22,7 @@
     <ProjectGuid>{E07E73E6-5952-4B2A-9C99-97B8BAA754B6}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <ProjectName>td-usb</ProjectName>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>7.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -63,13 +63,11 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>C:\WinDDK\7600.16385.1\inc;$(IncludePath)</IncludePath>
     <LibraryPath>C:\WinDDK\7600.16385.1\lib\win7\i386;$(LibraryPath)</LibraryPath>
-    <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <GenerateManifest>false</GenerateManifest>
     <IncludePath>C:\WinDDK\7600.16385.1\inc;$(IncludePath)</IncludePath>
     <LibraryPath>C:\WinDDK\7600.16385.1\lib\win7\i386;$(LibraryPath)</LibraryPath>
-    <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -99,6 +97,7 @@
     <ClCompile Include="devices\iwt1320.c" />
     <ClCompile Include="devices\iwt3X3.c" />
     <ClCompile Include="devices\tdfa50507.c" />
+    <ClCompile Include="devices\tdpc0205.c" />
     <ClCompile Include="devices\tdfa60220.c" />
     <ClCompile Include="devices\tdfa60250.c" />
     <ClCompile Include="devices\tdfa6032.c" />

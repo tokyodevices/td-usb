@@ -60,7 +60,7 @@
     <ClCompile Include="devices\tdfa30604.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="devices\tdfa50507.c">
+    <ClCompile Include="devices\tdpc0205.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="devices\iwt1320.c">
@@ -76,6 +76,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="devices\tdfa6032.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="devices\tdfa50507.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -39,7 +39,7 @@ static int set(td_context_t* context)
 {
 	char* p;
 
-	if (context->c == 0) throw_exception(EXITCODE_INVALID_OPTION, "No option is specified.");	
+	if (context->c == 0) throw_exception(EXITCODE_INVALID_OPTION, "No option is specified.");
 
 	for (int i = 0; i < context->c; i++)
 	{
@@ -71,14 +71,14 @@ static int get(td_context_t* context)
 		context->v[0] = REGNAME_GPIO_STATUS;
 	}
 
-	for(int i=0 ; i < context->c ; i++)
+	for (int i = 0; i < context->c; i++)
 	{
 		uint16_t addr = devreg_name2addr(context->v[i]);
 		uint32_t value = tddev2_read_devreg(context, addr);
 
 		if (context->format == FORMAT_RAW || context->format == FORMAT_SIMPLE)
 		{
-			if( i > 0 ) printf(",");
+			if (i > 0) printf(",");
 			printf("%d", value);
 		}
 		else
@@ -97,16 +97,16 @@ static int get(td_context_t* context)
 static int init(td_context_t* context)
 {
 	tddev2_write_devreg(context, devreg_name2addr(REGNAME_INITIAL_GPIO_STATUS), 0);
-	
+
 	printf("Device has been Initialized.\n");
 
 	return 0;
 }
 
 
-static td_device_t *export_type(void)
+static td_device_t* export_type(void)
 {
-	td_device_t *device = (td_device_t *)malloc(sizeof(td_device_t));
+	td_device_t* device = (td_device_t*)malloc(sizeof(td_device_t));
 	memset(device, 0, sizeof(td_device_t));
 
 	device->vendor_id = TOKYODEVICES_VENDOR_ID;
@@ -122,4 +122,4 @@ static td_device_t *export_type(void)
 	return device;
 }
 
-td_device_t *(*tdfa50507_import)(void) = export_type;
+td_device_t* (*tdfa50507_import)(void) = export_type;
