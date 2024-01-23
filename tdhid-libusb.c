@@ -179,11 +179,12 @@ int *TdHidOpenDevice(uint16_t vendor, uint16_t product, const char *product_name
 					}
 				}
 
-				break; // target is found.
+				goto FOUND; // target is found.
 			}
 		}
 	}
 
+FOUND:
 	// Claim interface #0
 	if (handle != NULL && dev->config->bNumInterfaces > 0) {
 		ret = usb_claim_interface(handle, 0);
