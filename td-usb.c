@@ -10,6 +10,7 @@
 #include <string.h>
 #include <time.h>
 #include <errno.h>
+#include <signal.h>
 
 #include "td-usb.h"
 #include "tdtimer.h"
@@ -18,6 +19,12 @@
 #include "tdthread.h"
 
 static td_context_t *context = NULL;
+
+
+void sigint_handler(int sig) {
+    printf("\nReceived SIGINT (signal %d). Cleaning up and exiting...\n", sig);
+    throw_exception(2222, "SIGINT");
+}
 
 /**
 * @brief Exit process with specified error code and message.
@@ -181,6 +188,8 @@ static void parse_args(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
 	char *p;
+
+	signal(SIGINT, sigint_handler);
 
 	setvbuf(stdout, NULL, _IONBF, 0);
 

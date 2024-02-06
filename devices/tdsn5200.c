@@ -59,8 +59,10 @@ static void print(td_context_t* context)
 
 	if (context->format == FORMAT_RAW)
 	{
-		printf("%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-			num_obj, s1, d1, s2, d2, s3, d3, s4, d4);
+		for(int i=0; i<REPORT_SIZE+1; i++) printf("%02x ", buffer[i]);
+		printf("\n");
+//		printf("%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+//			num_obj, s1, d1, s2, d2, s3, d3, s4, d4);
 	}
 	else
 	{
@@ -88,11 +90,11 @@ static int get(td_context_t* context)
 {
 	start(context, 1);
 
-	memset(buffer, 0, REPORT_SIZE + 1);
-	buffer[0] = 0x00;
-	buffer[1] = OUTPACKET_DUMP;
-	int result = TdHidSetReport(context->handle, buffer, context->device_type->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT);
-	if (result != TDHID_SUCCESS) throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
+//	memset(buffer, 0, REPORT_SIZE + 1);
+//	buffer[0] = 0x00;
+//	buffer[1] = OUTPACKET_DUMP;
+//	int result = TdHidSetReport(context->handle, buffer, context->device_type->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT);
+//	if (result != TDHID_SUCCESS) throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
 
 	while (1)
 	{
@@ -113,12 +115,13 @@ static int listen(td_context_t* context)
 
 	while (1)
 	{
-		if ((TdHidListenReport(context->handle, buffer, REPORT_SIZE + 1)) != TDHID_SUCCESS)
+		if ((TdHidListenReport(context->handle, buffer, REPORT_SIZE+1 )) != TDHID_SUCCESS)
 			throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
+		print(context);
 		if (buffer[1] == INPACKET_DUMP) break;
 	}
 
-	print(context);
+	//print(context);
 
 	return 0;
 }

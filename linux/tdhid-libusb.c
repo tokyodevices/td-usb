@@ -203,7 +203,11 @@ FOUND:
 
 void TdHidCloseDevice(int *handle)
 {
-	if (handle != NULL) usb_close((usb_dev_handle *)handle);
+	if (handle != NULL) 
+	{
+		usb_release_interface(handle,0);
+		usb_close((usb_dev_handle *)handle);
+	}
 }
 
 int TdHidGetReport(int *handle, unsigned char *buffer, int len, uint8_t report_type)
@@ -239,7 +243,9 @@ int TdHidListenReport(int *handle, unsigned char *buffer, int len)
 	int bytesReceived;
 
 	// via EP#1 (interrupt transfer)
-	bytesReceived = usb_interrupt_read((void *)handle, 0x81, (char *)&buffer[1], len-1, 0);
+	bytesReceived = usb_interrupt_read((void *)handle, 0x81, (char *)&(buffer[1]), len-1, 0);
+
+        //printf("req %d, %d received\n", len-1, bytesReceived);
 
 	if (bytesReceived < 0)
 	{
