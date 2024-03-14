@@ -105,7 +105,7 @@ static int read(td_context_t* context)
 		}
 		else
 		{
-			printf("%d\n", report_buffer[5]);
+			printf("%d\n", (report_buffer[4] << 8) | report_buffer[3]);
 		}
 	}
 	else if (strcmp(context->v[0], REGNAME_INTENSITY) == 0)
