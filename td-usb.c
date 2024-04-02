@@ -50,7 +50,7 @@ void throw_exception(int exitcode, const char *msg)
 
 static void print_usage(void)
 {
-	printf("TD-USB version 0.2.16\n");
+	printf("TD-USB version 0.2.17\n");
 	printf("Copyright (C) 2020-2024 Tokyo Devices, Inc. (tokyodevices.jp)\n");
 	printf("Usage: td-usb model_name[:serial] operation [options]\n");
 	printf("Visit https://github.com/tokyodevices/td-usb/ for details\n");
@@ -102,81 +102,76 @@ static void parse_args(int argc, char *argv[])
 		throw_exception(EXITCODE_UNKNOWN_OPERATION, NULL);
 	}
 
-	if (context->operation == OPERATION_GET ||
-		context->operation == OPERATION_SET ||
-		context->operation == OPERATION_LISTEN)
+	context->c = 0;
+	context->v[0] = NULL;
+
+	for (int i = 3; i < argc; i++)
 	{
-		context->c = 0;
-		context->v[0] = NULL;
-
-		for (int i = 3; i < argc; i++)
+		if ( strlen(argv[i]) >= 2 && (argv[i][0] == '-' && argv[i][1] == '-') ) // options
 		{
-			if ( strlen(argv[i]) >= 2 && (argv[i][0] == '-' && argv[i][1] == '-') ) // options
+			if (strncmp("--format", argv[i], 8) == 0)
 			{
-				if (strncmp("--format", argv[i], 8) == 0)
+				p = strchr(argv[i], '=');
+				if (p == NULL)
 				{
-					p = strchr(argv[i], '=');
-					if (p == NULL)
-					{
-						fprintf(stderr, "No format is specified.\n");
-						throw_exception(EXITCODE_INVALID_OPTION, NULL);
-					}
-					if (strcmp("json", p + 1) == 0) context->format = FORMAT_JSON;
-					if (strcmp("raw", p + 1) == 0) context->format = FORMAT_RAW;
-					if (strcmp("csv", p + 1) == 0) context->format = FORMAT_CSV; // reserved.
-					if (strcmp("tsv", p + 1) == 0) context->format = FORMAT_TSV; // reserved.
-				}
-				else if (strncmp("--loop", argv[i], 6) == 0)
-				{
-					context->loop = TRUE;
-
-					p = strchr(argv[i], '=');
-					if (p != NULL)
-					{
-						context->interval = atoi(p + 1);
-						if (context->interval < OPTION_MIN_INTERVAL)
-						{
-							fprintf(stderr, "Interval must be >= %d msec.\n", OPTION_MIN_INTERVAL);
-							throw_exception(EXITCODE_INVALID_OPTION, NULL);
-						}
-					}
-					else
-					{
-						context->interval = OPTION_DEFAULT_INTERVAL;
-					}
-				}
-				else if (strncmp("--skip", argv[i], 6) == 0)
-				{
-					p = strchr(argv[i], '=');
-					if (p == NULL)
-					{
-						fprintf(stderr, "Skip count is not set.\n");
-						throw_exception(EXITCODE_INVALID_OPTION, NULL);
-					}
-
-					context->skip = atoi(p + 1);
-					if (context->skip < OPTION_MIN_SKIP)
-					{
-						fprintf(stderr, "Skip count must be >= %d.\n", OPTION_MIN_SKIP);
-						throw_exception(EXITCODE_INVALID_OPTION, NULL);
-					}
-				}
-			}
-			else // property name|ids
-			{
-				if (context->c >= TD_CONTEXT_MAX_ARG_COUNT)
-				{
-					fprintf(stderr, "Option count must be < %d\n", TD_CONTEXT_MAX_ARG_COUNT);
+					fprintf(stderr, "No format is specified.\n");
 					throw_exception(EXITCODE_INVALID_OPTION, NULL);
+				}
+				if (strcmp("json", p + 1) == 0) context->format = FORMAT_JSON;
+				if (strcmp("raw", p + 1) == 0) context->format = FORMAT_RAW;
+				if (strcmp("csv", p + 1) == 0) context->format = FORMAT_CSV; // reserved.
+				if (strcmp("tsv", p + 1) == 0) context->format = FORMAT_TSV; // reserved.
+			}
+			else if (strncmp("--loop", argv[i], 6) == 0)
+			{
+				context->loop = TRUE;
+
+				p = strchr(argv[i], '=');
+				if (p != NULL)
+				{
+					context->interval = atoi(p + 1);
+					if (context->interval < OPTION_MIN_INTERVAL)
+					{
+						fprintf(stderr, "Interval must be >= %d msec.\n", OPTION_MIN_INTERVAL);
+						throw_exception(EXITCODE_INVALID_OPTION, NULL);
+					}
 				}
 				else
 				{
-					context->v[context->c] = argv[i];
-					context->c++;
-					DEBUG_PRINT(("OPTION:"));
-					DEBUG_PRINT((argv[i]));
-					DEBUG_PRINT(("\n"));
+					context->interval = OPTION_DEFAULT_INTERVAL;
 				}
+			}
+			else if (strncmp("--skip", argv[i], 6) == 0)
+			{
+				p = strchr(argv[i], '=');
+				if (p == NULL)
+				{
+					fprintf(stderr, "Skip count is not set.\n");
+					throw_exception(EXITCODE_INVALID_OPTION, NULL);
+				}
+
+				context->skip = atoi(p + 1);
+				if (context->skip < OPTION_MIN_SKIP)
+				{
+					fprintf(stderr, "Skip count must be >= %d.\n", OPTION_MIN_SKIP);
+					throw_exception(EXITCODE_INVALID_OPTION, NULL);
+				}
+			}
+		}
+		else // property name|ids
+		{
+			if (context->c >= TD_CONTEXT_MAX_ARG_COUNT)
+			{
+				fprintf(stderr, "Option count must be < %d\n", TD_CONTEXT_MAX_ARG_COUNT);
+				throw_exception(EXITCODE_INVALID_OPTION, NULL);
+			}
+			else
+			{
+				context->v[context->c] = argv[i];
+				context->c++;
+				DEBUG_PRINT(("OPTION:"));
+				DEBUG_PRINT((argv[i]));
+				DEBUG_PRINT(("\n"));
 			}
 		}
 	}
