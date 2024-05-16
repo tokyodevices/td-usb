@@ -37,6 +37,7 @@
 #define REGADDR_FIRMWARE_VERSION	0xF2
 
 #define ADC_MAX_VALUE				4095
+#define ADC_VREF					1.238
 
 static uint8_t calibration_available = 0;
 static unsigned int offset;
@@ -78,7 +79,7 @@ static void load_calibration_value(td_context_t* context)
 	double ref_intensity = v;
 	gain = ref_intensity / measured_intensity;
 		
-	// Decade voltage
+	// Decade voltage in mV
 	v = tddev2_read_devreg(context, REGADDR_DECADE_VOLTAGE);
 	voltage_per_decade = (double)v / 1000.0;
 	
@@ -151,7 +152,8 @@ static int get(td_context_t* context)
 				}
 				else
 				{
-					double intensity_nano_amp = pow(10.0, ((double)value * gain / (double)ADC_MAX_VALUE) / voltage_per_decade) * 10.0;
+					double max4206_voltage = (ADC_VREF * (double)value * gain / (double)ADC_MAX_VALUE);
+					double intensity_nano_amp = pow(10.0, max4206_voltage / voltage_per_decade) * 10.0;
 					int intensity_uW_per_cm2 = (int)(intensity_nano_amp * 1000.0 / nanoamp_per_mWcm2);
 					printf("%d", intensity_uW_per_cm2);
 				}
@@ -208,7 +210,8 @@ static int listen(td_context_t* context)
 		}
 		else
 		{
-			double intensity_nano_amp = pow(10.0, ((double)value * gain / (double)ADC_MAX_VALUE) / voltage_per_decade) * 10.0;
+			double max4206_voltage = (ADC_VREF * (double)value * gain / (double)ADC_MAX_VALUE);
+			double intensity_nano_amp = pow(10.0, max4206_voltage / voltage_per_decade) * 10.0;
 			int intensity_uW_per_cm2 = (int)(intensity_nano_amp * 1000.0 / nanoamp_per_mWcm2);
 			printf("%d", intensity_uW_per_cm2);
 		}
@@ -222,26 +225,20 @@ static int listen(td_context_t* context)
 
 static int init(td_context_t* context)
 {
-	if (context->c == 1 && strcmp(context->v[0], "offset") == 0)
-	{
-		// オフセット(測定下限)の値を設定する (TDSN0700本体は遮光された状態とする)
-		uint32_t current_intensity = tddev2_read_devreg(context, REGADDR_INTENSITY);
-
-		tddev2_write_devreg(context, REGADDR_OFFSET, current_intensity);
-		tddev2_save_to_flash(context);
-
-		printf("CAL_OFFSET is updated (%04Xh).", current_intensity);
-	}
-	else if (context->c == 2 && strcmp(context->v[0], "gain") == 0)
+	if (context->c == 1)
 	{
 		// ゲイン校正値を設定する (第3オプションは真の照度として与えられた値(単位: uW/cm2))
-		int uwcm2 = atoi(context->v[1]);
+		int uwcm2 = atoi(context->v[0]);
 
 		if (uwcm2 < 1000 || uwcm2 > 50000)
 			throw_exception(EXITCODE_INVALID_OPTION, "Refference intensity is out of range. Should be 1,000 to 50,000 uW/cm2.");
 
-		// ADCカウントに単位変換
-		uint32_t ref_intensity = (uint32_t)((log((double)uwcm2) - 2) * 1024);
+		load_calibration_value(context);
+
+		// 真値として与えられた照度を単位変換
+		double pd_current = (uwcm2 / 1000.0) * nanoamp_per_mWcm2;
+		double max4206_vout = log(pd_current / 10.0) * voltage_per_decade;
+		uint32_t ref_intensity = (uint32_t)(((double)ADC_MAX_VALUE * max4206_vout) / ADC_VREF);
 
 		// 現在の照度を取得
 		uint32_t current_intensity = tddev2_read_devreg(context, REGADDR_INTENSITY);
@@ -255,7 +252,7 @@ static int init(td_context_t* context)
 	}
 	else
 	{
-		throw_exception(EXITCODE_INVALID_OPTION, "Invalid options. Valid options are 'offset' or 'gain' (Reference Intensity)");
+		throw_exception(EXITCODE_INVALID_OPTION, "Invalid options.");
 	}
 
 	return 0;

@@ -32,7 +32,8 @@ CLI(Command Line Interface) for USB-based products of Tokyo Devices, Inc.
 |TDFA6032A|[USB Analog Output, 0-20mA/4-20mA Current Signal, Galvanic Isolation](https://en.tokyodevices.com/items/315)|`tdfa6032`|
 |TDPC0201|["Reset Master" - a USB Watchdog](https://en.tokyodevices.com/items/288)|`tdpc0201`|
 |TDPC0205|["Clock Dongle" - a USB Real-Time Clock for Current Time Sync., Battery Backup](https://en.tokyodevices.com/items/319)|`tdpc0205`|
-
+|TDSN0700-UA|[USB General Purpose UV Sensor, UVA 295-490nm, Bus-Powered](https://en.tokyodevices.com/items/321)|`tdsn0700`|
+|TDSN0700-UB|[USB General Purpose UV Sensor, UVB 240-320nm, Bus-Powered](https://en.tokyodevices.com/items/322)|`tdsn0700`|
 
 ## Build instructions
 
