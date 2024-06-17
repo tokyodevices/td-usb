@@ -156,11 +156,11 @@ int TdHidListDevices(UINT16 vendor_id, UINT16 product_id, LPCSTR product_name, L
 
 		if (buffer_count > 0) {
 			buffer_count += 1; // comma length
-			if (lpBuffer != NULL && szBuffer >= (buffer_count + 1)) strcat_s(lpBuffer, szBuffer - strlen(lpBuffer), ",");
+			if (lpBuffer != NULL) strcat_s(lpBuffer, szBuffer, ",");
 		}
 
 		buffer_count += strlen(tmp_buffer);
-		if (lpBuffer != NULL && szBuffer >= (buffer_count + 1)) strcat_s(lpBuffer, szBuffer - strlen(lpBuffer), tmp_buffer);
+		if (lpBuffer != NULL) strcat_s(lpBuffer, szBuffer, tmp_buffer);
 	}
 
 	SetupDiDestroyDeviceInfoList(deviceInfoList);
