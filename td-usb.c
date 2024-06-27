@@ -50,7 +50,7 @@ void throw_exception(int exitcode, const char *msg)
 
 static void print_usage(void)
 {
-	printf("TD-USB version 0.2.19\n");
+	printf("TD-USB version 0.2.20\n");
 	printf("Copyright (C) 2020-2024 Tokyo Devices, Inc. (tokyodevices.jp)\n");
 	printf("Usage: td-usb model_name[:serial] operation [options]\n");
 	printf("Visit https://github.com/tokyodevices/td-usb/ for details\n");
@@ -181,6 +181,8 @@ static void parse_args(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
 	char *p;
+
+	setvbuf(stdout, NULL, _IONBF, 0);
 
 	context = (td_context_t *)malloc(sizeof(td_context_t));
 	memset(context, 0, sizeof(td_context_t));
