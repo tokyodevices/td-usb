@@ -40,6 +40,12 @@ static int get(td_context_t* context)
 		if (in_buffer[1] == INPACKET_DATA) break;
 	}
 
+	/*
+	for (int i = 0; i < IN_REPORT_BUFFER_SIZE; i++)
+		printf("%02x", in_buffer[i]);
+	printf("\n");
+	*/
+
 	double t_degC = -45.0 + (175.0 * (double)(in_buffer[3] * 256 + in_buffer[2]))/65535.0;
 	double rh_pRH = -6.0 + (125.0 * (double)(in_buffer[5] * 256 + in_buffer[4]))/65535.0;
 	if (rh_pRH > 100.0) rh_pRH = 100.0;

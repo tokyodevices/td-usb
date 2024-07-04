@@ -19,34 +19,33 @@
 
 #define OUTPACKET_START					8
 #define OUTPACKET_STOP					9
+#define OUTPACKET_DUMP					10
 #define OUTPACKET_RSPAD_CAL				20
 #define OUTPACKET_XTALK_CAL				21
 #define OUTPACKET_ZD_OFFSET_CAL			22
 
 
-static int start = 0;
+static uint8_t buffer[REPORT_SIZE + 1];
+static int is_start = 0;
 
-static int listen(td_context_t* context)
+
+static int start(td_context_t* context, uint8_t oneshot)
 {
-	uint8_t buffer[REPORT_SIZE + 1];
-
-	if (start == 0)
+	if (is_start == 0)
 	{
 		memset(buffer, 0, REPORT_SIZE + 1);
 		buffer[0] = 0x00;
 		buffer[1] = OUTPACKET_START;
+		buffer[2] = oneshot; // continuous or one-shot
 		int result = TdHidSetReport(context->handle, buffer, context->device_type->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT);
 		if (result != TDHID_SUCCESS) throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
-		start = 1;
-	}
 
-	while (1)
-	{
-		if ((TdHidListenReport(context->handle, buffer, REPORT_SIZE + 1)) != TDHID_SUCCESS)
-			throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
-		if (buffer[1] == INPACKET_DUMP) break;
+		is_start = 1;
 	}
+}
 
+static int print(td_context_t* context)
+{
 	int num_obj = buffer[2];
 	int s1 = buffer[3];
 	int d1 = (int)((buffer[5] << 8) | buffer[4]);
@@ -81,10 +80,48 @@ static int listen(td_context_t* context)
 		}
 	}
 
-	fflush(stdout);	
+	fflush(stdout);
+}
+
+static int get(td_context_t* context)
+{
+	start(context, 1);
+
+	memset(buffer, 0, REPORT_SIZE + 1);
+	buffer[0] = 0x00;
+	buffer[1] = OUTPACKET_DUMP;
+	int result = TdHidSetReport(context->handle, buffer, context->device_type->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT);
+	if (result != TDHID_SUCCESS) throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
+
+	while (1)
+	{
+		if ((TdHidListenReport(context->handle, buffer, REPORT_SIZE + 1)) != TDHID_SUCCESS)
+			throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
+		if (buffer[1] == INPACKET_DUMP) break;
+	}
+
+	print(context);
 
 	return 0;
 }
+
+
+static int listen(td_context_t* context)
+{
+	start(context, 0);
+
+	while (1)
+	{
+		if ((TdHidListenReport(context->handle, buffer, REPORT_SIZE + 1)) != TDHID_SUCCESS)
+			throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
+		if (buffer[1] == INPACKET_DUMP) break;
+	}
+
+	print(context);
+
+	return 0;
+}
+
 
 static int init(td_context_t* context)
 {
@@ -144,7 +181,7 @@ static td_device_t* export_type(void)
 	device->output_report_size = REPORT_SIZE;
 	device->input_report_size = REPORT_SIZE;
 	device->init = init;
-	device->get = listen;
+	device->get = get;
 	device->listen = listen;
 	device->destroy = tddev2_destroy_firmware;
 	device->save = tddev2_save_to_flash;

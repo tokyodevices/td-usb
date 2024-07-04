@@ -1,5 +1,5 @@
 
-[Japanese(ì˙ñ{åÍ)](README_ja.md)
+[Japanese(Nihongo)](README_ja.md)
 
 # TD-USB
 
@@ -30,10 +30,13 @@ CLI(Command Line Interface) for USB-based products of Tokyo Devices, Inc.
 |TDFA60220|[USB AD Converter For 4-20mA Analog Current Signal with Galvanic Isolation](https://en.tokyodevices.com/items/311)|`tdfa60220`|
 |TDFA60250|[USB AD Converter For 0-5V/1-5V Analog Signal with Galvanic Isolation](https://en.tokyodevices.com/items/314)|`tdfa60250`|
 |TDFA6032A|[USB Analog Output, 0-20mA/4-20mA Current Signal, Galvanic Isolation](https://en.tokyodevices.com/items/315)|`tdfa6032`|
+|TDFA60350|[USB to 0-5V/1-5V, Analog Signal Output, Galvanic Isolation, Bus-Powered](https://en.tokyodevices.com/items/323)|`tdfa60350`|
 |TDPC0201|["Reset Master" - a USB Watchdog](https://en.tokyodevices.com/items/288)|`tdpc0201`|
 |TDPC0205|["Clock Dongle" - a USB Real-Time Clock for Current Time Sync., Battery Backup](https://en.tokyodevices.com/items/319)|`tdpc0205`|
 |TDSN0700-UA|[USB General Purpose UV Sensor, UVA 295-490nm, Bus-Powered](https://en.tokyodevices.com/items/321)|`tdsn0700`|
 |TDSN0700-UB|[USB General Purpose UV Sensor, UVB 240-320nm, Bus-Powered](https://en.tokyodevices.com/items/322)|`tdsn0700`|
+|TDSN5200|[General-purpose, USB ToF Laser Distance Meter, Up to 6m, Bus-Powered](https://en.tokyodevices.com/items/326)|`tdsn5200`|
+|TDSN7200|[General-Purpose High-Precision USB Temperature, Humidity, and Pressure Sensor, -40 to 125ÅãC, 0 to 100%RH, 260 to 1,260hPa, Bus Powered](https://en.tokyodevices.com/items/327)|`tdsn7200`|
 
 ## Build instructions
 
