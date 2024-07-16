@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <time.h>
+#include <math.h>
 #include "../td-usb.h"
 #include "../tdhid.h"
 #include "../tddevice.h"
@@ -29,7 +30,7 @@ static uint8_t buffer[REPORT_SIZE + 1];
 static int is_start = 0;
 
 
-static int start(td_context_t* context, uint8_t oneshot)
+static void start(td_context_t* context, uint8_t oneshot)
 {
 	if (is_start == 0)
 	{
@@ -44,7 +45,7 @@ static int start(td_context_t* context, uint8_t oneshot)
 	}
 }
 
-static int print(td_context_t* context)
+static void print(td_context_t* context)
 {
 	int num_obj = buffer[2];
 	int s1 = buffer[3];
@@ -74,7 +75,7 @@ static int print(td_context_t* context)
 			if (s3 != 0) d3 = 65535;
 			if (s4 != 0) d4 = 65535;
 
-			int dmin = min(min(min(d1, d2), d3), d4);
+			int dmin = (int)fmin(fmin(fmin(d1, d2), d3), d4);
 
 			printf("%d\n", dmin);
 		}
@@ -131,7 +132,6 @@ static int init(td_context_t* context)
 	if (context->c != 1)
 	{
 		throw_exception(EXITCODE_INVALID_OPTION, "Invalid options.");
-		return;
 	}
 
 	if ( strcmp(context->v[0], "spad") == 0 )
@@ -168,6 +168,8 @@ static int init(td_context_t* context)
 	{
 		throw_exception(EXITCODE_INVALID_OPTION, "Invalid options.");
 	}
+
+	return 0;
 }
 
 
