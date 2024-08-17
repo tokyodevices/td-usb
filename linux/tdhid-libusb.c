@@ -6,7 +6,7 @@
 #include <string.h>
 #include <usb.h>
 #include <errno.h>
-#include "tdhid.h"
+#include "../tdhid.h"
 
 static int didUsbInit = 0;
 

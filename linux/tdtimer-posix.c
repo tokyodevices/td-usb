@@ -8,8 +8,8 @@
 #include <signal.h>
 #include <sys/time.h>
 #include <time.h>
-#include "td-usb.h"
-#include "tdtimer.h"
+#include "../td-usb.h"
+#include "../tdtimer.h"
 
 timer_t timerid = 0;
 
