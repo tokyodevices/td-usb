@@ -1,12 +1,11 @@
 // tdtimer-win32.c
 
-#include <SDKDDKVer.h>
 #include <windows.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
-#include "tdtimer.h"
+#include "..\tdtimer.h"
 
 #pragma comment (lib, "winmm.lib")
 

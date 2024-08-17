@@ -1,12 +1,11 @@
 // tdthread-win32.c
 
-#include <SDKDDKVer.h>
 #include <windows.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "td-usb.h"
-#include "tdthread.h"
+#include "..\td-usb.h"
+#include "..\tdthread.h"
 
 static void (*UserCallback)(void *);
 static void *pUserParam;

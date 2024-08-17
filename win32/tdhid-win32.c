@@ -10,8 +10,8 @@
 #include <api/hidsdi.h>
 #include <api/hidpi.h>
 
-#include "td-usb.h"
-#include "tdhid.h"
+#include "..\td-usb.h"
+#include "..\tdhid.h"
 
 
 
