@@ -14,31 +14,34 @@ TD-USBは、東京デバイセズのUSB製品を制御するためのコマン�
 - Linux (Ubuntu LTS 20.04)
 
 
-## ビルドとダウンロード
-
-ソースコードのビルド・コンパイルに関する知識やサポートは東京デバイセズのサポート対象外です。
-バグレポート・要望等はGithubのIssueから追加をお願いいたします。
+## TD-USBの入手
 
 ### Windows
 
-[TD-USBリリースページ](https://github.com/tokyodevices/td-usb/releases)
-
-上記リンクより最新バージョンのZIPファイルをダウンロード後、任意のフォルダに解凍してください。
+Windowsユーザは[TD-USBリリースページ](https://github.com/tokyodevices/td-usb/releases)からビルド済み実行ファイルをダウンロードしてください。
+ZIPファイルをダウンロード後、任意のフォルダに解凍してください。
 アンインストールする場合には、フォルダごと削除してください。
 
 TD-USBの起動時に「VCRUNTIME140.dll がコンピュータ内に見つからないため、プログラムを起動できません」というエラーが発生する場合には、
 [最新の Visual C++ 再頒布可能パッケージ](https://learn.microsoft.com/ja-jp/cpp/windows/latest-supported-vc-redist?view=msvc-170)のx86版を
 ダウンロード・インストールして再度お試しください。
 
+### Linux
 
-**ソースコードのコンパイル**
+Linuxユーザの肩は下記の手順でソースコードからビルドしてください。
+なお、ソースコードのビルド・コンパイルに関する知識やサポートは東京デバイセズのサポート対象外です。
+バグレポート・要望等はGithubのIssueから追加をお願いいたします。
+
+### ソースコードからビルド
+
+**Windows**
 
 ソースコードからコンパイルする場合には Microsoft Visual Studio が必要です。
 TD-USBは `Setupapi.lib` と `Hid.lib` に依存しますので、これらのライブラリファイルがライブラリパスから見える必要があります。
 ライブラリの入手方法についてはWindows Driver Kit や Windows SDK を参照してください。
 また、ソースコードのうち/linuxフォルダに含まれるソースコードはコンパイル対象から除外してください。
 
-### Linux
+**Linux**
 
 Githubリポジトリ [tokyodevices/td-usb](https://github.com/tokyodevices/td-usb) より
 ソースコードをcloneしてコンパイルをしてください。
@@ -48,9 +51,15 @@ TD-USBは `libusb-dev` パッケージに依存します。
 
    例) `apt install libusb-dev`
 
-なお、多くのディストリビューションでは、一般ユーザがUSBデバイスにアクセスする権限はデフォルトで付与されません。
-udevのルールの追加等の設定が必要になりますので、Linuxのデバイスの権限管理の資料を参照してください。
+なお、多くのディストリビューションでは、一般ユーザがUSBデバイスにアクセスするためにudevの権限設定が必要になります。
 
+例えばUbuntuやDebian系の場合 `/etc/udev/rules.d/99-usb-tokyodevices.rules` ファイルを作成し、
+次の内容を記載してください:
+
+    SUBSYSTEM=="usb", ATTR{idVendor}=="16c0", ATTR{idProduct}=="05df", MODE="0666"
+
+上記の例の`16c0`や`05df`は制御したいデバイスのVID/PIDに変えてください。
+VID/PIDはUSBデバイスを挿した際のdmesgやsyslogから確認可能です。
 
 
 ## 対応モデル
