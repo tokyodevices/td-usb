@@ -26,10 +26,17 @@ TD-USBは、東京デバイセズのUSB製品を制御するためのコマン�
 上記リンクより最新バージョンのZIPファイルをダウンロード後、任意のフォルダに解凍してください。
 アンインストールする場合には、フォルダごと削除してください。
 
+TD-USBの起動時に「VCRUNTIME140.dll がコンピュータ内に見つからないため、プログラムを起動できません」というエラーが発生する場合には、
+[最新の Visual C++ 再頒布可能パッケージ](https://learn.microsoft.com/ja-jp/cpp/windows/latest-supported-vc-redist?view=msvc-170)のx86版を
+ダウンロード・インストールして再度お試しください。
+
+
+**ソースコードのコンパイル**
+
 ソースコードからコンパイルする場合には Microsoft Visual Studio が必要です。
-TD-USBは `Setupapi.lib` と `Hid.lib` に依存しますので、
-これらのライブラリファイルがライブラリパスから見える必要があります。
+TD-USBは `Setupapi.lib` と `Hid.lib` に依存しますので、これらのライブラリファイルがライブラリパスから見える必要があります。
 ライブラリの入手方法についてはWindows Driver Kit や Windows SDK を参照してください。
+また、ソースコードのうち/linuxフォルダに含まれるソースコードはコンパイル対象から除外してください。
 
 ### Linux
 

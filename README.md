@@ -40,6 +40,10 @@ CLI(Command Line Interface) for USB-based products of Tokyo Devices, Inc.
 
 ## Build instructions
 
+Windows users are recommended to download and run the pre-built executable from
+ [the Release page]((https://github.com/tokyodevices/td-usb/releases)).
+For Linux users or Windows users who prefer to build it themselves, please follow the steps below to compile.
+
 ### Dependency
 
 #### On Windows
@@ -60,6 +64,7 @@ If you do not have these library, try to search Windows Driver Kit or Windows SD
 
 Open `td-usb.sln` by Microsoft Visual Studio and build the project.
 Note that you may add library and include path for `Setupapi.lib` and `Hid.lib`.
+Please exclude the source code contained in the `/linux` folder from the build.
 
 #### On Linux
 
@@ -86,7 +91,7 @@ Run `td-usb` with no-option shows version information.
     Visit https://github.com/tokyodevices/td-usb/ for details
 
 
-### Setting device permission
+**Setting device permission**
 
 USB devices that are connected to Linux platform firstly be under control of `udev` system.
 Thus in most case it can only be accessed by root user. 
