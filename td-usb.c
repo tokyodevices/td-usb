@@ -252,6 +252,7 @@ int main(int argc, char *argv[])
 		if (context->device_type->set != NULL)
 		{
 			context->device_type->set(context);
+			if (context->interval > 0)	TdTimer_Start(context->device_type->set, context, context->interval);
 		}
 		else
 		{
