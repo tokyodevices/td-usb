@@ -99,6 +99,8 @@ static int get(td_context_t* context)
 		if ((TdHidListenReport(context->handle, buffer, REPORT_SIZE + 1)) != TDHID_SUCCESS)
 			throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
 		if (buffer[1] == INPACKET_DUMP) break;
+		for (int i = 0; i < REPORT_SIZE + 1; i++)
+			if (buffer[i] == INPACKET_DUMP) TdHidListenReport(context->handle, buffer, i);
 	}
 
 	print(context);
@@ -116,6 +118,8 @@ static int listen(td_context_t* context)
 		if ((TdHidListenReport(context->handle, buffer, REPORT_SIZE + 1)) != TDHID_SUCCESS)
 			throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
 		if (buffer[1] == INPACKET_DUMP) break;
+		for (int i = 0; i < REPORT_SIZE + 1; i++)
+			if (buffer[i] == INPACKET_DUMP) TdHidListenReport(context->handle, buffer, i);
 	}
 
 	print(context);
