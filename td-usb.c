@@ -22,8 +22,7 @@ static td_context_t *context = NULL;
 
 
 void sigint_handler(int sig) {
-    printf("\nReceived SIGINT (signal %d). Cleaning up and exiting...\n", sig);
-    throw_exception(2222, "SIGINT");
+    throw_exception(EXITCODE_SIGINT, NULL);
 }
 
 /**

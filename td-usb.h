@@ -36,6 +36,7 @@
 #define EXITCODE_DEVICE_IO_ERROR				12
 #define EXITCODE_INVALID_FORMAT					13
 #define EXITCODE_INVALID_RANGE					14
+#define EXITCODE_SIGINT							15
 
 #define ERROR_MSG_DEVICE_IO_ERROR				"USB I/O Error."
 #define ERROR_MSG_INVALID_FORMAT				"Invalid format."
