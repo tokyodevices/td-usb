@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="win32\tdtimer-win32.c">
+    <ClCompile Include="windows\tdtimer-windows.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="win32\tdhid-win32.c">
+    <ClCompile Include="windows\tdhid-windows.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="device_types.c">
@@ -36,7 +36,7 @@
     <ClCompile Include="td-usb.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="win32\tdthread-win32.c">
+    <ClCompile Include="windows\tdthread-windows.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="devices\iws73X.c">

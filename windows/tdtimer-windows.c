@@ -1,4 +1,4 @@
-// tdtimer-win32.c
+// tdtimer-windows.c
 
 #include <windows.h>
 #include <stdio.h>

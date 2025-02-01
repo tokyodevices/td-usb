@@ -10,8 +10,8 @@ TD-USBは、東京デバイセズのUSB製品を制御するためのコマン�
 
 ## 動作環境
 
-- Microsoft Windows 7以降 32/64ビット
-- Linux (Ubuntu LTS 20.04)
+- Microsoft Windows 7以降 64ビット
+- Linux (Ubuntu LTS 20.04) 以降
 
 
 ## TD-USBの入手

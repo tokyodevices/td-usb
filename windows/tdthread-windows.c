@@ -1,4 +1,4 @@
-// tdthread-win32.c
+// tdthread-windows.c
 
 #include <windows.h>
 #include <stdio.h>

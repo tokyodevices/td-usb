@@ -1,4 +1,4 @@
-// tdhid-win32.c
+// tdhid-windows.c
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <stdio.h>
@@ -7,8 +7,8 @@
 #include <stdint.h>
 
 #include <setupapi.h>
-#include <api/hidsdi.h>
-#include <api/hidpi.h>
+#include <hidsdi.h>
+#include <hidpi.h>
 
 #include "..\td-usb.h"
 #include "..\tdhid.h"

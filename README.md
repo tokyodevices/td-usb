@@ -8,8 +8,7 @@ CLI(Command Line Interface) for USB-based products of Tokyo Devices, Inc.
 
 ## Target platform
 
-- Microsoft Windows 7 or later 32/64bit  
-  (Depricated support on Microsoft Windows XP SP3)
+- Microsoft Windows 7 or later (64bit)
 - Linux
 
 
