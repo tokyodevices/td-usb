@@ -30,7 +30,7 @@
     <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <PlatformToolset>v141_xp</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -129,6 +129,7 @@
     <ClCompile Include="devices\tdsn7200.c" />
     <ClCompile Include="devices\tdsn7360.c" />
     <ClCompile Include="devices\tdsn7400.c" />
+    <ClCompile Include="devices\tdsn7502.c" />
     <ClCompile Include="device_types.c" />
     <ClCompile Include="devices\tdfa30608.c" />
     <ClCompile Include="tddevice.c" />
