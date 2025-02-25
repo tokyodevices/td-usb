@@ -50,12 +50,16 @@ void throw_exception(int exitcode, const char *msg)
 
 static void print_usage(void)
 {
-	printf("TD-USB version 0.2.28\n");
+	printf("TD-USB version 0.2.29\n");
 	printf("Copyright (C) 2020-2025 Tokyo Devices, Inc. (tokyodevices.jp)\n");
 	printf("Usage: td-usb model_name[:serial] operation [options]\n");
 	printf("Visit https://github.com/tokyodevices/td-usb/ for details\n");
 }
 
+void debug_print(const char* msg)
+{
+	if( context->verbose == TRUE ) printf(msg);
+}
 
 static void parse_args(int argc, char *argv[])
 {
@@ -156,6 +160,10 @@ static void parse_args(int argc, char *argv[])
 					fprintf(stderr, "Skip count must be >= %d.\n", OPTION_MIN_SKIP);
 					throw_exception(EXITCODE_INVALID_OPTION, NULL);
 				}
+			}
+			else if (strncmp("--verbose", argv[i], 9) == 0)
+			{
+				context->verbose = TRUE;
 			}
 		}
 		else // property name|ids

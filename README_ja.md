@@ -86,11 +86,13 @@ VID/PIDはUSBデバイスを挿した際のdmesgやsyslogから確認可能で�
 |TDSN0700-UA|[USB 汎用 紫外線照度計, UVセンサ, UVA 295-490nm, バスパワー](https://tokyodevices.com/items/321)|`tdsn0700`|
 |TDSN0700-UB|[USB 汎用 紫外線照度計, UVセンサ, UVB 240-320nm, バスパワー](https://tokyodevices.com/items/322)|`tdsn0700`|
 |TDSN5200|[汎用 USB ToF レーザー距離センサ 距離計測 最大6m バスパワー](https://tokyodevices.com/items/326)|`tdsn5200`|
-|TDSN604XX|汎用 高精度 USB 電流圧センサ 20ビット 20A,8A,0.8A ガルバニック絶縁 バスパワー|`tdsn604xx`|
+|TDSN604A8|[汎用 高精度 USB 電流圧センサ 20ビット ±0.8A ガルバニック絶縁 バスパワー](https://tokyodevices.com/items/332)|`tdsn604xx`|
+|TDSN60408|[汎用 高精度 USB 電流圧センサ 20ビット ±8A ガルバニック絶縁 バスパワー](https://tokyodevices.com/items/331)|`tdsn604xx`|
+|TDSN60420|[汎用 高精度 USB 電流圧センサ 20ビット ±20A ガルバニック絶縁 バスパワー](https://tokyodevices.com/items/330)|`tdsn604xx`|
 |TDSN7200|[汎用 高精度 USB温度・湿度・気圧センサ, -40 to 125℃, 0 to 100%RH, 260 to 1,260hPa, バスパワー](https://tokyodevices.com/items/327)|`tdsn7200`|
 |TDSN7360|[汎用 高精度 USB 加速度センサ 3軸 低ノイズ ±2.5g 440Hz バスパワー](https://tokyodevices.com/items/335)|`tdsn7360`|
 |TDSN7400|[汎用 USB 熱電対 温度センサ K型 -40 to 1200℃ ガルバニック絶縁 バスパワー](https://tokyodevices.com/items/333)|`tdsn7400`|
-
+|TDSN7502|[汎用 ロードセル to USB インタフェース 重量センサ 圧力センサ 重さセンサ 24ビット バスパワー](https://tokyodevices.com/items/344)|`tdsn7502`|
 
 ※TD-USBに対応しないUSB製品については、各製品ごとに制御プログラムが提供されています。
 詳しくは東京デバイセズ各製品のページ・マニュアルを参照してください。

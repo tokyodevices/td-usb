@@ -113,16 +113,20 @@ static int init(td_context_t* context)
 
 	if ( weight == 0 )
 	{
-		printf("Performing zero point calibration.\n");
 		uint32_t current_count = tddev2_read_devreg(context, ADDR_LAST_VALUE);
 		tddev2_write_devreg(context, ADDR_ZERO_COUNT, current_count);
+		printf("Done.\n");
 	}
-	else 
+	else if (weight < 100)
 	{
-		printf("Performing unit calibration.\n");
-		uint32_t current_count = tddev2_read_devreg(context, ADDR_LAST_VALUE);
+		printf("The Weight must be grater than 100g. Calibration is not performed.\n");
+	}
+	else
+	{
+		uint32_t current_count = tddev2_read_devreg(context, ADDR_LAST_VALUE);		
 		tddev2_write_devreg(context, ADDR_UNIT_COUNT, current_count);
 		tddev2_write_devreg(context, ADDR_UNIT_WEIGHT, weight);
+		printf("Done.\n");
 	}
 
 	return 0;

@@ -45,11 +45,7 @@
 #define TD_CONTEXT_MAX_ARG_COUNT				16
 
 
-#ifdef _DEBUG
-#define DEBUG_PRINT(arg)    printf arg
-#else
-#define DEBUG_PRINT(arg)
-#endif
+#define DEBUG_PRINT(arg)    debug_print arg
 
 
 
@@ -77,6 +73,7 @@ typedef struct
 	uint8_t operation;
 	uint8_t format;
 	uint8_t loop;
+	uint8_t verbose;
 	char* v[TD_CONTEXT_MAX_ARG_COUNT];
 	int c;
 } td_context_t;
@@ -86,3 +83,4 @@ typedef struct
 td_device_t *import_device_type(const char *model_name, int compare_length);
 void delete_device_type(td_device_t *device_type);
 void throw_exception(int exitcode, const char *msg);
+void debug_print(const char* msg);
