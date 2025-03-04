@@ -43,6 +43,7 @@
 #define MAX_REPORT_LENGTH						64
 
 #define TD_CONTEXT_MAX_ARG_COUNT				16
+#define TD_SETLOOP_BUFFER_SIZE					256
 
 
 #define DEBUG_PRINT(arg)    debug_print arg

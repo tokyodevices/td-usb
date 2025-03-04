@@ -130,9 +130,13 @@ Available operation and option differ depending on the product model.
 
 ### Writing a value to the device
 
-    td-usb (model_name) set [options]
+    td-usb (model_name) set [(name)=(value)] [--loop]
 
-- `[options]` is defiend by the product model.
+ `(name)=(value)` pair is defiend by the product model.
+
+With `--loop` option, TD-USB read repeatedly `(name)=(value)` pair from the standard input repeatedly.
+
+     td-usb model_name[:serial] set --loop
 
 
 ### Listening to an event from the device
@@ -171,7 +175,7 @@ Available operation and option differ depending on the product model.
 |11       |DEVICE_OPEN_ERROR           |Failed to open the device. |
 |12       |DEVICE_IO_ERROR             |Failed to communicate to the device. |
 |13       |INVALID_FORMAT              |Specified `--format` is not available for the device. |
-
+|14       |INVALID_RANGE			   |The given value is out of range. |
 
 
 ## License

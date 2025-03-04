@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
 #include <time.h>
 #include <errno.h>
 
@@ -18,6 +19,12 @@
 #include "tdthread.h"
 
 static td_context_t *context = NULL;
+
+
+void sigint_handler(int sig) 
+{
+	throw_exception(0, NULL);
+}
 
 /**
 * @brief Exit process with specified error code and message.
@@ -50,7 +57,7 @@ void throw_exception(int exitcode, const char *msg)
 
 static void print_usage(void)
 {
-	printf("TD-USB version 0.2.29\n");
+	printf("TD-USB version 0.3.0\n");
 	printf("Copyright (C) 2020-2025 Tokyo Devices, Inc. (tokyodevices.jp)\n");
 	printf("Usage: td-usb model_name[:serial] operation [options]\n");
 	printf("Visit https://github.com/tokyodevices/td-usb/ for details\n");
@@ -111,7 +118,7 @@ static void parse_args(int argc, char *argv[])
 
 	for (int i = 3; i < argc; i++)
 	{
-		if ( strlen(argv[i]) >= 2 && (argv[i][0] == '-' && argv[i][1] == '-') ) // options
+		if ( strlen(argv[i]) >= 2 && (argv[i][0] == '-' && argv[i][1] == '-') )
 		{
 			if (strncmp("--format", argv[i], 8) == 0)
 			{
@@ -123,8 +130,8 @@ static void parse_args(int argc, char *argv[])
 				}
 				if (strcmp("json", p + 1) == 0) context->format = FORMAT_JSON;
 				if (strcmp("raw", p + 1) == 0) context->format = FORMAT_RAW;
-				if (strcmp("csv", p + 1) == 0) context->format = FORMAT_CSV; // reserved.
-				if (strcmp("tsv", p + 1) == 0) context->format = FORMAT_TSV; // reserved.
+				if (strcmp("csv", p + 1) == 0) context->format = FORMAT_CSV;
+				if (strcmp("tsv", p + 1) == 0) context->format = FORMAT_TSV;
 			}
 			else if (strncmp("--loop", argv[i], 6) == 0)
 			{
@@ -166,7 +173,7 @@ static void parse_args(int argc, char *argv[])
 				context->verbose = TRUE;
 			}
 		}
-		else // property name|ids
+		else
 		{
 			if (context->c >= TD_CONTEXT_MAX_ARG_COUNT)
 			{
@@ -191,6 +198,8 @@ int main(int argc, char *argv[])
 	char *p;
 
 	setvbuf(stdout, NULL, _IONBF, 0);
+	
+	signal(SIGINT, sigint_handler);
 
 	context = (td_context_t *)malloc(sizeof(td_context_t));
 	memset(context, 0, sizeof(td_context_t));
@@ -259,8 +268,31 @@ int main(int argc, char *argv[])
 	case OPERATION_SET:
 		if (context->device_type->set != NULL)
 		{
-			context->device_type->set(context);
-			if (context->interval > 0)	TdTimer_Start(context->device_type->set, context, context->interval);
+			if (context->loop == TRUE && context->c == 0)
+			{
+				char buffer[TD_SETLOOP_BUFFER_SIZE];
+
+				while (TRUE)
+				{
+					if (fgets(buffer, TD_SETLOOP_BUFFER_SIZE, stdin) == NULL) break;
+
+					buffer[strcspn(buffer, "\n")] = '\0';
+
+					context->c = 0;
+					char* token = strtok(buffer, " ");
+					while (token != NULL && context->c < TD_CONTEXT_MAX_ARG_COUNT) {
+						context->v[context->c] = token;
+						context->c++;
+						token = strtok(NULL, " ");
+					}
+
+					context->device_type->set(context);
+				}
+			}
+			else
+			{
+				context->device_type->set(context);
+			}
 		}
 		else
 		{
