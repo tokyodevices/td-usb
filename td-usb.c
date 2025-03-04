@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include <signal.h>
 #include <time.h>
@@ -63,9 +64,15 @@ static void print_usage(void)
 	printf("Visit https://github.com/tokyodevices/td-usb/ for details\n");
 }
 
-void debug_print(const char* msg)
+void debug_print(const char* msg, ...)
 {
-	if( context->verbose == TRUE ) printf(msg);
+	if (context->verbose == TRUE)
+	{
+		va_list args;
+		va_start(args, msg);
+		vprintf(msg, args);
+		va_end(args);
+	}
 }
 
 static void parse_args(int argc, char *argv[])

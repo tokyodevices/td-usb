@@ -45,10 +45,7 @@
 #define TD_CONTEXT_MAX_ARG_COUNT				16
 #define TD_SETLOOP_BUFFER_SIZE					256
 
-
 #define DEBUG_PRINT(arg)    debug_print arg
-
-
 
 typedef struct {
 	char* product_name;
@@ -84,4 +81,4 @@ typedef struct
 td_device_t *import_device_type(const char *model_name, int compare_length);
 void delete_device_type(td_device_t *device_type);
 void throw_exception(int exitcode, const char *msg);
-void debug_print(const char* msg);
+void debug_print(const char* msg, ...);
