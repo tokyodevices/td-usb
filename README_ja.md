@@ -93,6 +93,7 @@ VID/PIDはUSBデバイスを挿した際のdmesgやsyslogから確認可能で�
 |TDSN7360|[汎用 高精度 USB 加速度センサ 3軸 低ノイズ ±2.5g 440Hz バスパワー](https://tokyodevices.com/items/335)|`tdsn7360`|
 |TDSN7400|[汎用 USB 熱電対 温度センサ K型 -40 to 1200℃ ガルバニック絶縁 バスパワー](https://tokyodevices.com/items/333)|`tdsn7400`|
 |TDSN7502|[汎用 ロードセル to USB インタフェース 重量センサ 圧力センサ 重さセンサ 24ビット バスパワー](https://tokyodevices.com/items/344)|`tdsn7502`|
+|TDFA1104|[汎用 USB 7セグメント LED 表示器 4桁 文字高0.8インチ 赤色](https://tokyodevices.com/items/350)|`tdfa1104`|
 
 ※TD-USBに対応しないUSB製品については、各製品ごとに制御プログラムが提供されています。
 詳しくは東京デバイセズ各製品のページ・マニュアルを参照してください。

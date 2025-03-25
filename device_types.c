@@ -32,6 +32,7 @@ extern td_device_t* (*tdsn604xx_import)(void);
 extern td_device_t* (*tdsn7400_import)(void);
 extern td_device_t* (*tdsn7360_import)(void);
 extern td_device_t* (*tdsn7502_import)(void);
+extern td_device_t* (*tdfa1104_import)(void);
 
 td_device_t *import_device_type(const char *model_name, int compare_length)
 {
@@ -58,6 +59,7 @@ td_device_t *import_device_type(const char *model_name, int compare_length)
 	if (!strncmp(model_name, "tdsn7400", compare_length)) return tdsn7400_import();
 	if (!strncmp(model_name, "tdsn7360", compare_length)) return tdsn7360_import();
 	if (!strncmp(model_name, "tdsn7502", compare_length)) return tdsn7502_import();
+	if (!strncmp(model_name, "tdfa1104", compare_length)) return tdfa1104_import();
 	return 0;
 }
 
