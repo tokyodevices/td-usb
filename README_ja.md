@@ -77,6 +77,7 @@ VID/PIDはUSBデバイスを挿した際のdmesgやsyslogから確認可能で�
 |TDFA30608|[USB絶縁デジタルIO入力モジュール 8接点 電流ソース・シンク対応型](https://tokyodevices.com/items/284)|`tdfa30608`|
 |TDFA30604|USB絶縁デジタルIO入力モジュール 4接点 電流ソース・シンク対応型|`tdfa30604`|
 |TDFA50507|[USB絶縁デジタルIO出力モジュール 7接点 電流シンクタイプ](https://tokyodevices.com/items/308)|`tdfa50507`|
+|TDFA50607|[USB絶縁デジタルIO出力ボード 5/12/24V出力 7接点 電流ソースタイプ](https://tokyodevices.com/items/345)|`tdfa50607`|
 |TDFA60220|[絶縁型 4-20mA アナログ信号対応 USB電流計・ADコンバータ](https://tokyodevices.com/items/311)|`tdfa60220`|
 |TDFA60250|[絶縁型 0-5V 1-5V アナログ信号対応 USB電圧計・ADコンバータ](https://tokyodevices.com/items/314)|`tdfa60250`|
 |TDFA6032A|[0-20mA/4-20mA電流信号用 USBアナログ出力ユニット 絶縁タイプ](https://tokyodevices.com/items/315)|`tdfa6032`|

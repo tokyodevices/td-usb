@@ -1,5 +1,5 @@
 /**
-* @file tdfa50507.c
+* @file tdfa50607.c
 * @author s-dz, Tokyo Devices, Inc. (tokyodevices.jp)
 */
 
@@ -11,7 +11,7 @@
 #include "../tdhid.h"
 #include "../tddevice.h"
 
-#define PRODUCT_ID						0x1771
+#define PRODUCT_ID						0x1784
 
 #define REPORT_SIZE						8
 
@@ -57,7 +57,7 @@ static int set(td_context_t* context)
 			uint32_t value = atoi(p + 1);
 			tddev2_write_devreg(context, addr, value);
 		}
-
+		
 	}
 
 	return 0;
@@ -116,11 +116,10 @@ static td_device_t* export_type(void)
 	device->input_report_size = REPORT_SIZE;
 	device->get = get;
 	device->set = set;
-	device->destroy = tddev2_destroy_firmware;
 	device->save = tddev2_save_to_flash;
 	device->init = init;
 
 	return device;
 }
 
-td_device_t* (*tdfa50507_import)(void) = export_type;
+td_device_t* (*tdfa50607_import)(void) = export_type;

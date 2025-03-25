@@ -26,6 +26,7 @@ CLI(Command Line Interface) for USB-based products of Tokyo Devices, Inc.
 |TDFA30608|[8CH USB Digital Input Module with Optical Isolation](https://en.tokyodevices.com/items/284)|`tdfa30608`|
 |TDFA30604|4CH USB Digital Input Module with Optical Isolation|`tdfa30604`|
 |TDFA50507|[7CH USB Digital Output Module with Optical Isolation and Current Sink](https://en.tokyodevices.com/items/308)|`tdfa50507`|
+|TDFA50607|[USB Digital Output Board, 7 Channels, 5/12/24V Output, Current Source Output, Bus-powered](https://en.tokyodevices.com/items/345)|`tdfa50607`|
 |TDFA60220|[USB AD Converter For 4-20mA Analog Current Signal with Galvanic Isolation](https://en.tokyodevices.com/items/311)|`tdfa60220`|
 |TDFA60250|[USB AD Converter For 0-5V/1-5V Analog Signal with Galvanic Isolation](https://en.tokyodevices.com/items/314)|`tdfa60250`|
 |TDFA6032A|[USB Analog Output, 0-20mA/4-20mA Current Signal, Galvanic Isolation](https://en.tokyodevices.com/items/315)|`tdfa6032`|
