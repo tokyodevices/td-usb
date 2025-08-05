@@ -128,9 +128,9 @@ static int listen(td_context_t* context)
 
 static int init(td_context_t* context)
 {
-	tddev2_write_devreg(context, devreg_name2addr(REGNAME_ANTI_CHAT_LEN), 20);
-	tddev2_write_devreg(context, devreg_name2addr(REGNAME_TRIGGER_RISING), 0);
-	tddev2_write_devreg(context, devreg_name2addr(REGNAME_TRIGGER_FALLING), 0);
+	tddev2_write_devreg(context, devreg_name2addr(REGNAME_ANTI_CHAT_LEN), 32);
+	tddev2_write_devreg(context, devreg_name2addr(REGNAME_TRIGGER_RISING), 255);
+	tddev2_write_devreg(context, devreg_name2addr(REGNAME_TRIGGER_FALLING), 255);
 	
 	printf("Device has been Initialized.\n");
 

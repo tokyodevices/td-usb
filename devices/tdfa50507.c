@@ -116,7 +116,6 @@ static td_device_t* export_type(void)
 	device->input_report_size = REPORT_SIZE;
 	device->get = get;
 	device->set = set;
-	device->destroy = tddev2_destroy_firmware;
 	device->save = tddev2_save_to_flash;
 	device->init = init;
 
