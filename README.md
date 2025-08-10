@@ -40,6 +40,7 @@ CLI(Command Line Interface) for USB-based products of Tokyo Devices, Inc.
 |TDSN60408|[Genral-purpose Precision USB Current Sensor 20 Bit 8A Galvanic Isolation Bus-Powered](https://en.tokyodevices.com/items/331)|`tdsn604xx`|
 |TDSN60420|[Genral-purpose Precision USB Current Sensor 20 Bit 20A Galvanic Isolation Bus-Powered](https://en.tokyodevices.com/items/330)|`tdsn604xx`|
 |TDSN7200|[General-Purpose High-Precision USB Temperature, Humidity, and Pressure Sensor, -40 to 125ÅãC, 0 to 100%RH, 260 to 1,260hPa, Bus Powered](https://en.tokyodevices.com/items/327)|`tdsn7200`|
+|TDSN7300|[Air Analyzer 2: Generic USB CO2 Meter](https://en.tokyodevices.com/items/356)|`tdsn7300`|
 |TDSN7360|[General-purpose high-precision USB accelerometer, 3-axis, low-noise, Å}2.5g, 440Hz, bus-powered](https://en.tokyodevices.com/items/335)|`tdsn7360`|
 |TDSN7400|[General purpose USB thermocouple temperature sensor K type -40 to 1200Åé galvanic isolation Bus-Powered](https://en.tokyodevices.com/items/333)|`tdsn7400`|
 |TDSN7502|[General purpose, Load cell to USB interface, Weight/Pressure sensor, 24-bit, Bus-power](https://en.tokyodevices.com/items/344)|`tdsn7502`|

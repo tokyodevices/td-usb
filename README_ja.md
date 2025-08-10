@@ -91,6 +91,7 @@ VID/PIDはUSBデバイスを挿した際のdmesgやsyslogから確認可能で�
 |TDSN60408|[汎用 高精度 USB 電流圧センサ 20ビット ±8A ガルバニック絶縁 バスパワー](https://tokyodevices.com/items/331)|`tdsn604xx`|
 |TDSN60420|[汎用 高精度 USB 電流圧センサ 20ビット ±20A ガルバニック絶縁 バスパワー](https://tokyodevices.com/items/330)|`tdsn604xx`|
 |TDSN7200|[汎用 高精度 USB温度・湿度・気圧センサ, -40 to 125℃, 0 to 100%RH, 260 to 1,260hPa, バスパワー](https://tokyodevices.com/items/327)|`tdsn7200`|
+|TDSN7300|[USB CO2(二酸化炭素)濃度・温度・湿度センサ 「エア・アナライザ2」](https://tokyodevices.com/items/356)|`tdsn7300`|
 |TDSN7360|[汎用 高精度 USB 加速度センサ 3軸 低ノイズ ±2.5g 440Hz バスパワー](https://tokyodevices.com/items/335)|`tdsn7360`|
 |TDSN7400|[汎用 USB 熱電対 温度センサ K型 -40 to 1200℃ ガルバニック絶縁 バスパワー](https://tokyodevices.com/items/333)|`tdsn7400`|
 |TDSN7502|[汎用 ロードセル to USB インタフェース 重量センサ 圧力センサ 重さセンサ 24ビット バスパワー](https://tokyodevices.com/items/344)|`tdsn7502`|
