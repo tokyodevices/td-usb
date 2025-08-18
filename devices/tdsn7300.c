@@ -20,10 +20,25 @@
 #define OUT_REPORT_BUFFER_SIZE			8U
 
 #define OUTPACKET_MEASURE				0x80
+#define OUTPACKET_SETLED				0x83
 #define INPACKET_DATA					0x80
 
 uint8_t in_buffer[IN_REPORT_BUFFER_SIZE + 1];
 uint8_t out_buffer[OUT_REPORT_BUFFER_SIZE + 1];
+
+static int set(td_context_t* context)
+{
+	if (context->c == 0) throw_exception(EXITCODE_INVALID_OPTION, "No value is specified.");
+
+	memset(out_buffer, 0, OUT_REPORT_BUFFER_SIZE + 1);
+	out_buffer[0] = 0x00;
+	out_buffer[1] = OUTPACKET_SETLED;
+	out_buffer[2] = atoi(context->v[0]);
+	int result = TdHidSetReport(context->handle, out_buffer, context->device_type->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT);
+	if (result != TDHID_SUCCESS) throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
+
+	return 0;
+}
 
 static int get(td_context_t* context)
 {
@@ -40,13 +55,23 @@ static int get(td_context_t* context)
 		if (in_buffer[1] == INPACKET_DATA) break;
 	}
 
-	int co2_ppm = (int)((in_buffer[2] << 8) | in_buffer[3]);
-	double t_degC = -45.0 + 175.0 * ( (double)((in_buffer[5] << 8) | in_buffer[6]) / 65535.0);
-	double rh_pRH = 100.0 * ((double)((in_buffer[8] << 8) | in_buffer[9]) / 65535.0);
-	if (rh_pRH > 100.0) rh_pRH = 100.0;
-	if (rh_pRH < 0.0) rh_pRH = 0.0;
-
-	printf("%d,%.1f,%.1f\n", co2_ppm, t_degC, rh_pRH);
+	if (context->c == 0)
+	{
+		int co2_ppm = (int)((in_buffer[3] << 8) | in_buffer[4]);
+		double t_degC = -45.0 + 175.0 * ((double)((in_buffer[6] << 8) | in_buffer[7]) / 65535.0);
+		double rh_pRH = 100.0 * ((double)((in_buffer[9] << 8) | in_buffer[10]) / 65535.0);
+		if (rh_pRH > 100.0) rh_pRH = 100.0;
+		if (rh_pRH < 0.0) rh_pRH = 0.0;
+		printf("%d,%.1f,%.1f\n", co2_ppm, t_degC, rh_pRH);
+	}
+	else if (strcmp(context->v[0], "LED_STATUS") == 0)
+	{
+		printf("%d\n", in_buffer[2]);
+	}
+	else if (strcmp(context->v[0], "FIRMWARE_VERSION") == 0)
+	{
+		printf("%d.%d\n", in_buffer[14], in_buffer[13]);
+	}
 
 	fflush(stdout);
 
@@ -63,6 +88,7 @@ static td_device_t* export_type(void)
 	device->output_report_size = OUT_REPORT_BUFFER_SIZE;
 	device->input_report_size = IN_REPORT_BUFFER_SIZE;
 	device->get = get;
+	device->set = set;
 
 	return device;
 }
