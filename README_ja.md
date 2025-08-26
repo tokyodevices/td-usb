@@ -69,7 +69,8 @@ VID/PIDはUSBデバイスを挿した際のdmesgやsyslogから確認可能で�
 |-------|-----|---------------|
 |IWT120-USB|[汎用 USB 警告ランプ・ブザー モジュール](https://tokyodevices.com/items/201)|`iwt120`|
 |IWT1320-USB|[ＬＥＤ・ブザー付　汎用ＵＳＢスライダー入力デバイス](https://tokyodevices.com/items/271)|`iwt1320`|
-|IWS660-CS|[汎用 USB照度センサ (明るさセンサ)](https://tokyodevices.com/items/228)|`iws660`|
+|IWS600-CM|[USB 焦電型赤外線 汎用人感センサ 5m バスパワー (コマンド制御タイプ)](https://tokyodevices.com/items/177)|`iws600cm`|
+|IWS660-CS|[汎用 USB 照度センサ, 照度計, 光量計, バスパワー, 10 to 60,000 Lx](https://tokyodevices.com/items/228)|`iws660`|
 |IWS73X-CS|[USB CO2(二酸化炭素)濃度・温度・湿度センサ 「エア・アナライザ」](https://tokyodevices.com/items/205)|`iws73x`|
 |IWT303-1C|[USBリレー制御モジュール 1接点 10A 250V](https://tokyodevices.com/items/148)|`iwt303`|
 |IWT303-3C|[USBリレー制御モジュール 3接点 10A 250V](https://tokyodevices.com/items/149)|`iwt303`|

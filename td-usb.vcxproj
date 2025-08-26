@@ -110,6 +110,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="devices\iws600cm.c" />
     <ClCompile Include="devices\iws660.c" />
     <ClCompile Include="devices\iws73X.c" />
     <ClCompile Include="devices\iwt120.c" />

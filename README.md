@@ -15,9 +15,10 @@ CLI(Command Line Interface) for USB-based products of Tokyo Devices, Inc.
 ## Product models
 
 |Model number|Name|`model_name` string|
-|-------|-----|---------------|
+|------------|----|-------------------|
 |IWT120-USB|[Generic USB LED/Buzzer Module](https://en.tokyodevices.com/items/201)|`iwt120`|
 |IWT1320-USB|[General Purpose USB Slider Input Device with integrated LED and Buzzer](https://en.tokyodevices.com/items/271)|`iwt1320`|
+|IWS600-CM|[General Purpose Infrared Motion Detector Bus-Powred (Command Control Type)](https://en.tokyodevices.com/items/177)|`iws600cm`|
 |IWS660-CS|[Generic USB Illuminance Meter](https://en.tokyodevices.com/items/228)|`iws660`|
 |IWS73X-CS|[Generic USB CO2 Meter](https://en.tokyodevices.com/items/205)|`iws73x`|
 |IWT303-1C|[USB SPDT Relay Controller 1CH](https://en.tokyodevices.com/items/148)|`iwt303`|
