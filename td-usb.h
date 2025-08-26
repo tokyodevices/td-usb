@@ -47,22 +47,25 @@
 
 #define DEBUG_PRINT(arg)    debug_print arg
 
+// Forward declaration
+typedef struct td_context_t td_context_t;
+
 typedef struct {
 	char* product_name;
 	unsigned short vendor_id;
 	unsigned short product_id;
 	uint8_t output_report_size;
 	uint8_t input_report_size;
-	int (*set)(void* context);
-	int (*save)(void* context);
-	int (*get)(void* context);
-	int (*listen)(void* context);
-	int (*init)(void* context);
-	int (*destroy)(void* context);	
+	int (*set)(td_context_t* context);
+	int (*save)(td_context_t* context);
+	int (*get)(td_context_t* context);
+	int (*listen)(td_context_t* context);
+	int (*init)(td_context_t* context);
+	int (*destroy)(td_context_t* context);	
 } td_device_t;
 
 
-typedef struct
+struct td_context_t
 {
 	int* handle;
 	td_device_t* device_type;
@@ -74,7 +77,7 @@ typedef struct
 	uint8_t verbose;
 	char* v[TD_CONTEXT_MAX_ARG_COUNT];
 	int c;
-} td_context_t;
+};
 
 
 
