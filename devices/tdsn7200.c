@@ -22,8 +22,8 @@
 #define OUTPACKET_MEASURE				0x80
 #define INPACKET_DATA					0x80
 
-uint8_t in_buffer[IN_REPORT_BUFFER_SIZE + 1];
-uint8_t out_buffer[OUT_REPORT_BUFFER_SIZE + 1];
+static uint8_t in_buffer[IN_REPORT_BUFFER_SIZE + 1];
+static uint8_t out_buffer[OUT_REPORT_BUFFER_SIZE + 1];
 
 static int get(td_context_t* context)
 {
