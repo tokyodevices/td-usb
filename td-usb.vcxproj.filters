@@ -117,6 +117,9 @@
     <ClCompile Include="devices\tdfa30303.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="devices\tdfa60228.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="tdhid.h">
