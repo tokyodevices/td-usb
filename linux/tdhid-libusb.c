@@ -6,9 +6,31 @@
 #include <string.h>
 #include <usb.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+#include <linux/usbdevice_fs.h>
 #include "../tdhid.h"
 
 static int didUsbInit = 0;
+
+static char detachedNode[64] = "";	// usbfs path; set only when we detached usbhid
+
+// libusb-0.1 has no attach counterpart, so ask usbfs directly.
+static void reattachKernelDriver(void)
+{
+	struct usbdevfs_ioctl command = { 0, USBDEVFS_CONNECT, NULL };
+	int fd;
+
+	if (detachedNode[0] == '\0') return;
+
+	fd = open(detachedNode, O_WRONLY);
+	if (fd < 0 || ioctl(fd, USBDEVFS_IOCTL, &command) < 0)
+		fprintf(stderr, "Warning: could not rebind kernel driver: %s\n", strerror(errno));
+	if (fd >= 0) close(fd);
+
+	detachedNode[0] = '\0';
+}
 
 static int usbhidGetStringAscii(usb_dev_handle *dev, int index, char *buf, int buflen)
 {
@@ -190,9 +212,11 @@ FOUND:
 		ret = usb_claim_interface(handle, 0);
 		if (ret < 0) {
 			usb_detach_kernel_driver_np(handle, 0);
+			snprintf(detachedNode, sizeof(detachedNode), "/dev/bus/usb/%.20s/%.20s", bus->dirname, dev->filename);
 			ret = usb_claim_interface(handle, 0);
 			if (ret < 0) {
 				fprintf(stderr, "Could not claim interface #0\n");
+				TdHidCloseDevice((int *)handle);
 				return NULL;
 			}
 		}
@@ -203,7 +227,12 @@ FOUND:
 
 void TdHidCloseDevice(int *handle)
 {
-	if (handle != NULL) usb_close((usb_dev_handle *)handle);
+	if (handle == NULL) return;
+
+	usb_release_interface((usb_dev_handle *)handle, 0);
+	usb_close((usb_dev_handle *)handle);
+
+	reattachKernelDriver();
 }
 
 int TdHidGetReport(int *handle, unsigned char *buffer, int len, uint8_t report_type)
