@@ -203,8 +203,7 @@ td-usb tdpc2401 save
 `init` stops automatic operation, restores the defaults above, and connects both
 VBUS and DATA. Run `save` separately to persist settings. Manual `BRIDGE_STATUS`
 is not saved; startup uses `AUTO_ENABLE` and `INITIAL_BRIDGE_STATUS`.
-`listen` is unsupported; use `get --loop`. `destroy` erases the firmware; current
-TDPC2401 firmware requires SWD reprogramming afterward and does not enter USB DFU.
+`listen` and `destroy` are unsupported. Use `get --loop` to monitor the state.
 
 
 ## Exit code and error definition

@@ -128,7 +128,6 @@ static td_device_t* export_type(void)
 	device->set = set;
 	device->save = tddev2_save_to_flash;
 	device->init = init;
-	device->destroy = tddev2_destroy_firmware;
 	return device;
 }
 

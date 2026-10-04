@@ -21,7 +21,7 @@ extern td_device_t* (*tdpc2401_import)(void);
 static uint32_t registers[256];
 static uint16_t write_addresses[16];
 static uint32_t write_values[16];
-static int write_count, save_count, destroy_count, expected_error;
+static int write_count, save_count, expected_error;
 static jmp_buf error_jump;
 
 void throw_exception(int code, const char* message)
@@ -48,7 +48,6 @@ int tddev2_write_devreg(td_context_t* context, uint16_t addr, uint32_t value)
 }
 
 int tddev2_save_to_flash(td_context_t* context) { (void)context; save_count++; return 0; }
-int tddev2_destroy_firmware(td_context_t* context) { (void)context; destroy_count++; return 0; }
 
 static void check_set(td_context_t* context, const char* argument, int error, uint16_t addr, uint32_t value)
 {
@@ -92,9 +91,8 @@ int main(void)
     context.device_type = device;
     assert(device->vendor_id == 0x32EE && device->product_id == 0x1789);
     assert(device->input_report_size == 8 && device->output_report_size == 8);
-    assert(device->save != NULL && device->destroy != NULL);
+    assert(device->save != NULL && device->destroy == NULL);
     assert(device->save(&context) == 0 && save_count == 1);
-    assert(device->destroy(&context) == 0 && destroy_count == 1);
     assert(device->listen == NULL);
 
     check_set(&context, "0", 0, 6, 0);

@@ -251,8 +251,7 @@ td-usb tdpc2401 save
 `init` は自動運転を停止し、上記の初期値へ戻して VBUS と DATA の両方を接続します。
 設定を保存する場合は別途 `save` を実行してください。手動の `BRIDGE_STATUS` は保存されず、
 起動時は `AUTO_ENABLE` と `INITIAL_BRIDGE_STATUS` に従います。
-`listen` は非対応です。状態監視には `get --loop` を使用します。
-`destroy` はファームウェアを消去します。現ファームウェアは消去後に SWD での再書き込みが必要で、USB DFU には移行しません。
+`listen` と `destroy` は非対応です。状態監視には `get --loop` を使用します。
 
 
 ### 終了コードとエラー
