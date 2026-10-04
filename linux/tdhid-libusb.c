@@ -264,7 +264,8 @@ int TdHidSetReport(int *handle, unsigned char *buffer, int len, uint8_t report_t
 
 	bytesSent = usb_control_msg(
 		(void *)handle,
-		USB_TYPE_CLASS | USB_RECIP_DEVICE | USB_ENDPOINT_OUT,
+		USB_TYPE_CLASS | USB_ENDPOINT_OUT |
+			(report_type == USB_HID_REPORT_TYPE_OUTPUT ? USB_RECIP_INTERFACE : USB_RECIP_DEVICE),
 		USBRQ_HID_SET_REPORT, report_type << 8, 0,
 		(char *)&buffer[1], len-1, DEFAULT_TIMEOUT);
 
