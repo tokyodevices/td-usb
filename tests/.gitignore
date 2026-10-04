@@ -2,3 +2,4 @@
 /test_libusb_read
 /*.exe
 /*.obj
+/test_tdpc2401
