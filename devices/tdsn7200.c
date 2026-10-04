@@ -33,12 +33,10 @@ static int get(td_context_t* context)
 	int result = TdHidSetReport(context->handle, out_buffer, context->device_type->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT);
 	if (result != TDHID_SUCCESS) throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
 
-	while (1)
-	{
-		if ((TdHidListenReport(context->handle, in_buffer, IN_REPORT_BUFFER_SIZE + 1)) != TDHID_SUCCESS)
-			throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
-		if (in_buffer[1] == INPACKET_DATA) break;
-	}
+	const uint8_t expected[] = { INPACKET_DATA };
+	result = tddev2_wait_response(context, in_buffer, expected, sizeof(expected));
+	if (result != TDHID_SUCCESS)
+		throw_exception(EXITCODE_DEVICE_IO_ERROR, result == TDHID_ERR_TIMEOUT ? ERROR_MSG_DEVICE_TIMEOUT : ERROR_MSG_DEVICE_IO_ERROR);
 
 	/*
 	for (int i = 0; i < IN_REPORT_BUFFER_SIZE; i++)

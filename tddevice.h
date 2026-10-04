@@ -15,6 +15,10 @@
 #define OUTPACKET_ERASE					0xF6
 
 
+// Wait up to DEFAULT_TIMEOUT for a report matching expected (excluding the report ID).
+// Unrelated reports are discarded without extending the deadline.
+int tddev2_wait_response(td_context_t* context, uint8_t* report, const uint8_t* expected, int expected_len);
+
 int tddev1_init_operation(td_context_t* context);
 
 int tddev2_write_devreg(td_context_t* context, uint16_t addr, uint32_t value);

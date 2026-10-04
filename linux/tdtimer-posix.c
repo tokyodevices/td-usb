@@ -11,6 +11,14 @@
 #include "../td-usb.h"
 #include "../tdtimer.h"
 
+uint64_t TdTimer_GetMilliseconds(void)
+{
+	struct timespec now;
+	if (clock_gettime(CLOCK_MONOTONIC, &now) != 0)
+		throw_exception(EXITCODE_DEVICE_IO_ERROR, "Could not read monotonic clock.");
+	return (uint64_t)now.tv_sec * 1000 + now.tv_nsec / 1000000;
+}
+
 timer_t timerid = 0;
 
 static void(*pHandler)(void *);

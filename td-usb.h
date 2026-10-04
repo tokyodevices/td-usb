@@ -38,6 +38,7 @@
 #define EXITCODE_INVALID_RANGE					14
 
 #define ERROR_MSG_DEVICE_IO_ERROR				"USB I/O Error."
+#define ERROR_MSG_DEVICE_TIMEOUT				"USB response timed out."
 #define ERROR_MSG_INVALID_FORMAT				"Invalid format."
 
 #define MAX_REPORT_LENGTH						64

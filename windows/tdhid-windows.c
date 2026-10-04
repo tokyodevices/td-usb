@@ -298,29 +298,40 @@ int TdHidGetReport(int *handle, unsigned char *buffer, int len, uint8_t report_t
 }
 
 
-int TdHidListenReport(int *handle, unsigned char *buffer, int len)
+int TdHidReadInputReport(int *handle, unsigned char *buffer, int len, int timeout_ms)
 {
-	OVERLAPPED overlapped;
+	OVERLAPPED overlapped = { 0 };
 	DWORD nRead = 0;
+	int result = TDHID_SUCCESS;
 
-	memset(&overlapped, 0, sizeof(overlapped));
+	if (len < 2 || timeout_ms < 0) return TDHID_ERR_IO;
+	overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+	if (overlapped.hEvent == NULL) return TDHID_ERR_IO;
 
-	if ( ReadFile(handle, (LPVOID)buffer, len, &nRead, &overlapped) == FALSE )
+	if (!ReadFile(handle, buffer, len, &nRead, &overlapped))
 	{
 		if (GetLastError() == ERROR_IO_PENDING)
 		{
-			if ( WaitForSingleObject(handle, DEFAULT_TIMEOUT) != WAIT_OBJECT_0 )
-			{				
+			DWORD wait = WaitForSingleObject(overlapped.hEvent, timeout_ms == 0 ? INFINITE : (DWORD)timeout_ms);
+			if (wait != WAIT_OBJECT_0)
+			{
 				CancelIo(handle);
-				return TDHID_ERR_TIMEOUT; // Timeout
+				// The buffer and OVERLAPPED must remain alive until cancellation completes.
+				GetOverlappedResult(handle, &overlapped, &nRead, TRUE);
+				result = wait == WAIT_TIMEOUT ? TDHID_ERR_TIMEOUT : TDHID_ERR_IO;
+			}
+			else if (!GetOverlappedResult(handle, &overlapped, &nRead, FALSE))
+			{
+				result = TDHID_ERR_IO;
 			}
 		}
 		else
 		{
-			print_last_error_msg();
-			return TDHID_ERR_IO;
+			result = TDHID_ERR_IO;
 		}
 	}
-	
-	return TDHID_SUCCESS;
+
+	CloseHandle(overlapped.hEvent);
+	if (result == TDHID_SUCCESS && nRead != (DWORD)len) return TDHID_ERR_IO;
+	return result;
 }

@@ -12,6 +12,7 @@
 #include "../td-usb.h"
 #include "../tdhid.h"
 #include "../tddevice.h"
+#include "../tdtimer.h"
 
 #define PRODUCT_ID						0x177C
 
@@ -86,9 +87,21 @@ static void print(td_context_t* context)
 	fflush(stdout);
 }
 
+// Keep the existing report realignment reads within the same response deadline.
+static void read_response(td_context_t* context, int len, uint64_t deadline)
+{
+	uint64_t now = TdTimer_GetMilliseconds();
+	if (now >= deadline)
+		throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_TIMEOUT);
+	int result = TdHidReadInputReport(context->handle, buffer, len, (int)(deadline - now));
+	if (result != TDHID_SUCCESS)
+		throw_exception(EXITCODE_DEVICE_IO_ERROR, result == TDHID_ERR_TIMEOUT ? ERROR_MSG_DEVICE_TIMEOUT : ERROR_MSG_DEVICE_IO_ERROR);
+}
+
 static int get(td_context_t* context)
 {
 	start(context, 1);
+	uint64_t deadline = TdTimer_GetMilliseconds() + DEFAULT_TIMEOUT;
 
 	while (1)
 	{
@@ -98,13 +111,12 @@ static int get(td_context_t* context)
 		int result = TdHidSetReport(context->handle, buffer, context->device_type->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT);
 		if (result != TDHID_SUCCESS) throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
 
-		if ((TdHidListenReport(context->handle, buffer, REPORT_SIZE + 1)) != TDHID_SUCCESS)
-			throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
+		read_response(context, REPORT_SIZE + 1, deadline);
 
 		if (buffer[1] == INPACKET_DUMP) break;
 		
 		for (int i = 0; i < REPORT_SIZE + 1; i++)
-			if (buffer[i] == INPACKET_DUMP) TdHidListenReport(context->handle, buffer, i);
+			if (buffer[i] == INPACKET_DUMP) read_response(context, i, deadline);
 	}
 
 	print(context);
@@ -119,11 +131,11 @@ static int listen(td_context_t* context)
 
 	while (1)
 	{
-		if ((TdHidListenReport(context->handle, buffer, REPORT_SIZE + 1)) != TDHID_SUCCESS)
+		if ((TdHidReadInputReport(context->handle, buffer, REPORT_SIZE + 1, 0)) != TDHID_SUCCESS)
 			throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
 		if (buffer[1] == INPACKET_DUMP) break;
 		for (int i = 0; i < REPORT_SIZE + 1; i++)
-			if (buffer[i] == INPACKET_DUMP) TdHidListenReport(context->handle, buffer, i);
+			if (buffer[i] == INPACKET_DUMP) TdHidReadInputReport(context->handle, buffer, i, 0);
 	}
 
 	print(context);

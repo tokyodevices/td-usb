@@ -25,4 +25,5 @@ int *TdHidOpenDevice(uint16_t vendor_id, uint16_t product_id, const char *name, 
 void TdHidCloseDevice(int *handle);
 int TdHidSetReport(int *handle, unsigned char *buffer, int len, uint8_t report_type);
 int TdHidGetReport(int *handle, unsigned char *buffer, int len, uint8_t report_type);
-int TdHidListenReport(int *handle, unsigned char *buffer, int len);
+// Read one Input report. timeout_ms == 0 waits indefinitely; no diagnostics are printed.
+int TdHidReadInputReport(int *handle, unsigned char *buffer, int len, int timeout_ms);

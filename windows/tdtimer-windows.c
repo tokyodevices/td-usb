@@ -9,6 +9,11 @@
 
 #pragma comment (lib, "winmm.lib")
 
+uint64_t TdTimer_GetMilliseconds(void)
+{
+	return GetTickCount64();
+}
+
 static void(*pUserHandler)(void *);
 static void *pUserParam;
 

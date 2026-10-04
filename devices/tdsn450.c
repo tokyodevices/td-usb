@@ -141,7 +141,7 @@ static int listen(td_context_t* context)
 	unsigned char in_report_buffer[IN_REPORT_SIZE + 1];
 	memset(in_report_buffer, 0, IN_REPORT_SIZE + 1);
 
-	while ((result = TdHidListenReport(context->handle, in_report_buffer, IN_REPORT_SIZE + 1)) == TDHID_ERR_TIMEOUT);
+	result = TdHidReadInputReport(context->handle, in_report_buffer, IN_REPORT_SIZE + 1, 0);
 
 	if (result == TDHID_ERR_IO)
 			throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);

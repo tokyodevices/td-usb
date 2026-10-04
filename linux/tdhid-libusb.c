@@ -234,28 +234,15 @@ int TdHidGetReport(int *handle, unsigned char *buffer, int len, uint8_t report_t
 	return 0;
 }
 
-int TdHidListenReport(int *handle, unsigned char *buffer, int len)
+int TdHidReadInputReport(int *handle, unsigned char *buffer, int len, int timeout_ms)
 {
-	int bytesReceived;
+	if (len < 2 || timeout_ms < 0) return TDHID_ERR_IO;
+	buffer[0] = 0; // Dummy report ID; not present on the USB wire.
 
-	// via EP#1 (interrupt transfer)
-	bytesReceived = usb_interrupt_read((void *)handle, 0x81, (char *)&buffer[1], len-1, 0);
-
-	if (bytesReceived < 0)
-	{
-		if (bytesReceived == -ETIMEDOUT) 
-		{
-			fprintf(stderr, "Timeout\n");
-			return 2;
-		}
-		else
-		{
-			fprintf(stderr, "Error on receiving report: %s\n", usb_strerror());
-			return 1;
-		}
-	}
-
-	return 0;
+	int bytesReceived = usb_interrupt_read((void *)handle, 0x81, (char *)&buffer[1], len - 1, timeout_ms);
+	if (bytesReceived == -ETIMEDOUT) return TDHID_ERR_TIMEOUT;
+	if (bytesReceived != len - 1) return TDHID_ERR_IO;
+	return TDHID_SUCCESS;
 }
 
 int TdHidSetReport(int *handle, unsigned char *buffer, int len, uint8_t report_type)
