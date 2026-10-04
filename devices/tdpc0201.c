@@ -64,12 +64,10 @@ static void wdg_clear(td_context_t* context)
 	if (TdHidSetReport(context->handle, report_buffer, REPORT_SIZE + 1, USB_HID_REPORT_TYPE_OUTPUT))
 		throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
 
-	DEBUG_PRINT(("Listening INPACKET_ACK reply.\n"));
-	if (TdHidListenReport(context->handle, report_buffer, REPORT_SIZE + 1) != 0)
-		throw_exception(EXITCODE_DEVICE_IO_ERROR, "USB I/O Error.");
-
-	if (report_buffer[1] != INPACKET_ACK)
-		throw_exception(EXITCODE_DEVICE_IO_ERROR, "Invalid reply.");
+	const uint8_t expected[] = { INPACKET_ACK };
+	int result = tddev2_wait_response(context, report_buffer, expected, sizeof(expected));
+	if (result != TDHID_SUCCESS)
+		throw_exception(EXITCODE_DEVICE_IO_ERROR, result == TDHID_ERR_TIMEOUT ? ERROR_MSG_DEVICE_TIMEOUT : ERROR_MSG_DEVICE_IO_ERROR);
 }
 
 
@@ -166,7 +164,7 @@ static int listen(td_context_t* context)
 	int result;
 	memset(report_buffer, 0, REPORT_SIZE + 1);
 
-	while ((result = TdHidListenReport(context->handle, report_buffer, REPORT_SIZE + 1)) == TDHID_ERR_TIMEOUT);
+	result = TdHidReadInputReport(context->handle, report_buffer, REPORT_SIZE + 1, 0);
 
 	if (result == TDHID_ERR_IO)
 		throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);

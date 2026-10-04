@@ -88,6 +88,7 @@ VID/PIDはUSBデバイスを挿した際のdmesgやsyslogから確認可能で�
 |TDFA60350|[USB 0-5V/1-5V 電圧信号用 アナログ出力ユニット ガルバニック絶縁 バスパワー](https://tokyodevices.com/items/323)|`tdfa60350`|
 |TDPC0201|[USBウォッチドッグ・電源リセットデバイス 「リセットマスター」](https://tokyodevices.com/items/288)|`tdpc0201`|
 |TDPC0205|["時計ドングル" USB リアルタイムクロック(RTC)  現在時刻取得・同期用 電池バックアップ](https://tokyodevices.com/items/319)|`tdpc0205`|
+|TDPC2401|USB挿抜コントローラ基板|`tdpc2401`|
 |TDSN0700-UA|[USB 汎用 紫外線照度計, UVセンサ, UVA 295-490nm, バスパワー](https://tokyodevices.com/items/321)|`tdsn0700`|
 |TDSN0700-UB|[USB 汎用 紫外線照度計, UVセンサ, UVB 240-320nm, バスパワー](https://tokyodevices.com/items/322)|`tdsn0700`|
 |TDSN5200|[汎用 USB ToF レーザー距離センサ 距離計測 最大6m バスパワー](https://tokyodevices.com/items/326)|`tdsn5200`|
@@ -215,6 +216,42 @@ PCに同じモデルの製品が複数台接続されている時に各個体の
 実行しない場合には`y`以外のキーを入力してください。
 
     WARNING: The device will not be available until new firmware is written. Continue? [y/N]
+
+
+### TDPC2401 USB挿抜コントローラ
+
+レジスタ名なしの `get` は `BRIDGE_STATUS` を返します。複数のレジスタ名を指定すると、
+指定順の符号なし10進数をカンマ区切りで出力します。標準形式と `--format=raw` は同じ出力です。
+`set 0` ～ `set 3` は `set BRIDGE_STATUS=0` ～ `set BRIDGE_STATUS=3` の省略形です。
+設定値は符号なし10進数で指定します。
+
+|レジスタ|範囲・意味|`save` の保存対象|
+|---|---|---|
+|`INITIAL_BRIDGE_STATUS`|0～3、起動時の接続状態。初期値3|対象|
+|`AUTO_ENABLE`|0: 停止、1: 開始・再開始。初期値0|対象|
+|`AUTO_MASK`|1～3、自動運転の切断対象。初期値3|対象|
+|`CONNECTED_TIME`|1～4294967295秒。初期値3595|対象|
+|`DISCONNECTED_TIME`|1～4294967295秒。初期値5|対象|
+|`BRIDGE_STATUS`|0～3、現在の接続状態|対象外|
+|`TIMER_REMAINING`|残り秒数。読み取り専用、停止中は0|対象外|
+|`FIRMWARE_VERSION`|`(major << 8) \| minor`。読み取り専用|対象外|
+
+接続状態とマスクの bit 0 は VBUS、bit 1 は DATA です。接続状態では1が接続を表します。
+`BRIDGE_STATUS` への書き込みは自動運転を停止します。
+`AUTO_ENABLE=0` は現在の接続状態を維持して停止し、1の書き込みは接続区間の先頭から開始します。
+設定は指定順に適用されるため、自動運転の開始は最後に指定してください。
+
+```text
+td-usb tdpc2401 get BRIDGE_STATUS TIMER_REMAINING --loop=1000
+td-usb tdpc2401 set BRIDGE_STATUS=3
+td-usb tdpc2401 set AUTO_ENABLE=0 AUTO_MASK=3 CONNECTED_TIME=3595 DISCONNECTED_TIME=5 AUTO_ENABLE=1
+td-usb tdpc2401 save
+```
+
+`init` は自動運転を停止し、上記の初期値へ戻して VBUS と DATA の両方を接続します。
+設定を保存する場合は別途 `save` を実行してください。手動の `BRIDGE_STATUS` は保存されず、
+起動時は `AUTO_ENABLE` と `INITIAL_BRIDGE_STATUS` に従います。
+`listen` と `destroy` は非対応です。状態監視には `get --loop` を使用します。
 
 
 ### 終了コードとエラー

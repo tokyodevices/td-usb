@@ -14,9 +14,26 @@
 #include "td-usb.h"
 #include "tdhid.h"
 #include "tddevice.h"
+#include "tdtimer.h"
 
 
 static uint8_t buffer[MAX_REPORT_LENGTH + 1];
+
+int tddev2_wait_response(td_context_t* context, uint8_t* report, const uint8_t* expected, int expected_len)
+{
+	uint64_t deadline = TdTimer_GetMilliseconds() + DEFAULT_TIMEOUT;
+
+	while (1)
+	{
+		uint64_t now = TdTimer_GetMilliseconds();
+		if (now >= deadline) return TDHID_ERR_TIMEOUT;
+
+		int result = TdHidReadInputReport(context->handle, report, context->device_type->input_report_size + 1,
+			(int)(deadline - now));
+		if (result != TDHID_SUCCESS) return result;
+		if (memcmp(&report[1], expected, expected_len) == 0) return TDHID_SUCCESS;
+	}
+}
 
 /**
 * @brief TDDEV1 Std. INIT Command
@@ -56,14 +73,10 @@ int tddev2_save_to_flash(td_context_t* context)
 		throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
 
 
-	// listen for ACK
-	DEBUG_PRINT(("Listening ACK reply.\n"));
-	while (1)
-	{
-		if (TdHidListenReport(context->handle, buffer, context->device_type->input_report_size + 1) != 0)
-			throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
-		if (buffer[1] == INPACKET_ACK && buffer[2] == OUTPACKET_SAVE) break;
-	}
+	const uint8_t expected[] = { INPACKET_ACK, OUTPACKET_SAVE };
+	int result = tddev2_wait_response(context, buffer, expected, sizeof(expected));
+	if (result != TDHID_SUCCESS)
+		throw_exception(EXITCODE_DEVICE_IO_ERROR, result == TDHID_ERR_TIMEOUT ? ERROR_MSG_DEVICE_TIMEOUT : ERROR_MSG_DEVICE_IO_ERROR);
 
 	printf("Device registers have been saved to flash.\n");
 
@@ -112,14 +125,11 @@ int tddev2_write_devreg(td_context_t* context, uint16_t addr, uint32_t value)
 	if (TdHidSetReport(context->handle, buffer, context->device_type->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT))
 		throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
 
-	// listen for ACK
-	DEBUG_PRINT(("Listening ACK reply.\n"));
-	while (1)
-	{
-		if (TdHidListenReport(context->handle, buffer, context->device_type->input_report_size + 1) != 0)
-			throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
-		if (buffer[1] == INPACKET_ACK) break;
-	}
+	// Older firmware sends ACK without the command byte for SET.
+	const uint8_t expected[] = { INPACKET_ACK };
+	int result = tddev2_wait_response(context, buffer, expected, sizeof(expected));
+	if (result != TDHID_SUCCESS)
+		throw_exception(EXITCODE_DEVICE_IO_ERROR, result == TDHID_ERR_TIMEOUT ? ERROR_MSG_DEVICE_TIMEOUT : ERROR_MSG_DEVICE_IO_ERROR);
 
 	return 0;
 }
@@ -130,55 +140,25 @@ int tddev2_write_devreg(td_context_t* context, uint16_t addr, uint32_t value)
 */
 uint32_t tddev2_read_devreg(td_context_t* context, uint16_t addr)
 {
-	int result = 0;
-	int retry_count = 0;
-	
+	const uint8_t expected[] = { INPACKET_DEVREG, addr & 0xFF, addr >> 8 };
 
-	while ( retry_count < 3 )
+	for (int retry_count = 0; retry_count < 3; retry_count++)
 	{
-		time_t start= time(NULL);	
-
 		DEBUG_PRINT((">> OUTPACKET_GET (ADDR: 0x%02X)\n", addr));
 		memset(buffer, 0, MAX_REPORT_LENGTH + 1);
-		buffer[0] = 0x00;        // Dummy report Id
-		buffer[1] = OUTPACKET_GET; // OUTPACKET_GET
-		buffer[2] = addr & 0xFF; // Address LSB
-		buffer[3] = addr >> 8;   // Address MSB
+		buffer[1] = OUTPACKET_GET;
+		buffer[2] = addr & 0xFF;
+		buffer[3] = addr >> 8;
 
-		result = TdHidSetReport(context->handle, buffer, context->device_type->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT);
-		if (result != TDHID_SUCCESS) throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
+		if (TdHidSetReport(context->handle, buffer, context->device_type->output_report_size + 1, USB_HID_REPORT_TYPE_OUTPUT))
+			throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
 
-		while (1)
-		{
-			result = TdHidListenReport(context->handle, buffer, context->device_type->input_report_size + 1);
-
-			if (result == TDHID_ERR_IO)
-			{
-				throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
-			}
-			else if (result == TDHID_ERR_TIMEOUT)
-			{
-				retry_count++; 
-				break; 
-			}
-			else
-			{
-				if (buffer[1] == INPACKET_DEVREG)
-				{
-					DEBUG_PRINT(("<< INPACKET_DEVREG (ADDR: 0x%02X)\n", (buffer[3] << 8) | buffer[2]));
-					if( ((buffer[3] << 8) | buffer[2]) == addr ) return *(uint32_t*)(&buffer[4]);
-				}
-				else
-				{
-					DEBUG_PRINT(("<< PACKET (0x%02X) %02X %02X %02X %02X %02X ...\n",
-						buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6]));
-					if (time(NULL) - start > 1) { retry_count++; break; }
-				}
-			}
-		}
+		int result = tddev2_wait_response(context, buffer, expected, sizeof(expected));
+		if (result == TDHID_SUCCESS) return *(uint32_t*)(&buffer[4]);
+		if (result != TDHID_ERR_TIMEOUT)
+			throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
 	}
 
-	throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_IO_ERROR);
-
+	throw_exception(EXITCODE_DEVICE_IO_ERROR, ERROR_MSG_DEVICE_TIMEOUT);
 	return 0;
 }

@@ -36,6 +36,7 @@ CLI(Command Line Interface) for USB-based products of Tokyo Devices, Inc.
 |TDFA60350|[USB to 0-5V/1-5V, Analog Signal Output, Galvanic Isolation, Bus-Powered](https://en.tokyodevices.com/items/323)|`tdfa60350`|
 |TDPC0201|["Reset Master" - a USB Watchdog](https://en.tokyodevices.com/items/288)|`tdpc0201`|
 |TDPC0205|["Clock Dongle" - a USB Real-Time Clock for Current Time Sync., Battery Backup](https://en.tokyodevices.com/items/319)|`tdpc0205`|
+|TDPC2401|USB Connection/Disconnection Controller|`tdpc2401`|
 |TDSN0700-UA|[USB General Purpose UV Sensor, UVA 295-490nm, Bus-Powered](https://en.tokyodevices.com/items/321)|`tdsn0700`|
 |TDSN0700-UB|[USB General Purpose UV Sensor, UVB 240-320nm, Bus-Powered](https://en.tokyodevices.com/items/322)|`tdsn0700`|
 |TDSN5200|[General-purpose, USB ToF Laser Distance Meter, Up to 6m, Bus-Powered](https://en.tokyodevices.com/items/326)|`tdsn5200`|
@@ -167,6 +168,42 @@ With `--loop` option, TD-USB read repeatedly `(name)=(value)` pair from the stan
 
 - After this operation the device will be unavailable until new firmware is written.
 
+
+
+### TDPC2401 USB connection controller
+
+`get` without register names returns `BRIDGE_STATUS`. Multiple names return unsigned
+decimal values in the requested order, separated by commas. The default format and
+`--format=raw` use the same output. `set 0` through `set 3` are shortcuts for
+`set BRIDGE_STATUS=0` through `set BRIDGE_STATUS=3`. Values are unsigned decimal integers.
+
+|Register|Range / meaning|Saved by `save`|
+|---|---|---|
+|`INITIAL_BRIDGE_STATUS`|0-3; startup state, default 3|Yes|
+|`AUTO_ENABLE`|0: stop, 1: start/restart; default 0|Yes|
+|`AUTO_MASK`|1-3; automatic disconnection mask, default 3|Yes|
+|`CONNECTED_TIME`|1-4294967295 seconds; default 3595|Yes|
+|`DISCONNECTED_TIME`|1-4294967295 seconds; default 5|Yes|
+|`BRIDGE_STATUS`|0-3; current state|No|
+|`TIMER_REMAINING`|Remaining seconds; read-only, 0 when stopped|No|
+|`FIRMWARE_VERSION`|`(major << 8) \| minor`; read-only|No|
+
+For bridge states and masks, bit 0 is VBUS and bit 1 is DATA. In a bridge state,
+1 means connected. Writing `BRIDGE_STATUS` stops automatic operation.
+`AUTO_ENABLE=0` stops while keeping the current state; writing 1 starts a new
+connected interval. Commands are applied in order; enable automatic operation last.
+
+```text
+td-usb tdpc2401 get BRIDGE_STATUS TIMER_REMAINING --loop=1000
+td-usb tdpc2401 set BRIDGE_STATUS=3
+td-usb tdpc2401 set AUTO_ENABLE=0 AUTO_MASK=3 CONNECTED_TIME=3595 DISCONNECTED_TIME=5 AUTO_ENABLE=1
+td-usb tdpc2401 save
+```
+
+`init` stops automatic operation, restores the defaults above, and connects both
+VBUS and DATA. Run `save` separately to persist settings. Manual `BRIDGE_STATUS`
+is not saved; startup uses `AUTO_ENABLE` and `INITIAL_BRIDGE_STATUS`.
+`listen` and `destroy` are unsupported. Use `get --loop` to monitor the state.
 
 
 ## Exit code and error definition

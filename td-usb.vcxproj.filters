@@ -57,6 +57,9 @@
     <ClCompile Include="devices\tdpc0205.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="devices\tdpc2401.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="devices\iwt1320.c">
       <Filter>Source Files</Filter>
     </ClCompile>
