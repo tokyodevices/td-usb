@@ -218,6 +218,59 @@ PCに同じモデルの製品が複数台接続されている時に各個体の
     WARNING: The device will not be available until new firmware is written. Continue? [y/N]
 
 
+### TDFA60228 8ch電流入力
+
+レジスタ名なしの`get`はCH0～CH7を順に取得し、カンマ区切りの1行で出力します。
+レジスタ名を指定した場合は、指定順に出力します。既定の表示では各チャンネルの
+校正値を用いて`電流[mA] = ADC_VALUE_CHn × 25.0 / CALIBRATION_CHn`で換算します。
+4～20mAの範囲への制限は行いません。`--format=raw`は校正値を読まず、ADC生値を
+符号なし整数で出力します。それ以外のレジスタは整数で表示しますが、
+`FIRMWARE_VERSION`は既定で`major.minor`、rawで格納された整数値を表示します。
+
+|レジスタ名|アドレス|アクセス・SETの有効値|`save`の対象|
+|---|---|---|---|
+|`CONTROL_FLAG`|`0x00`|読書き可。0: DUMP無効、4: DUMP有効。初期値0|対象|
+|`CALIBRATION_CH0`～`CALIBRATION_CH7`|`0x01`～`0x08`|読書き可。1～4095。初期値3103|対象|
+|`ADC_VALUE_CH0`～`ADC_VALUE_CH7`|`0x80`～`0x87`|読出し専用。0～4095|対象外|
+|`FIRMWARE_VERSION`|`0xF2`|読出し専用。`(major << 8) \| minor`|対象外|
+
+CH0～CH7は基板のIN0～IN7に対応します。校正値は、各チャンネルに25mAを入力した
+ときのADC生値です。SETには符号なし10進整数を指定します。予約ビット、範囲外の値、
+読出し専用レジスタへの書込みはエラーになります。全引数を検証してから指定順に
+書き込み、保存には別途`save`を実行します。単一チャンネル用の`ADC_VALUE`と
+`CALIBRATION`という名前はTDFA60228では使用できません。
+
+`listen`はDUMPを受信するたびにCH0～CH7を1行で出力します。`ADC_VALUE_CHn`を
+指定すると、そのチャンネルのみを指定順に出力します。先に`set CONTROL_FLAG=4`で
+DUMPを有効にしてください。`listen`自体は設定を変更せず、イベントが来るまで待機します。
+測定に成功すると100ms周期でDUMPを送信します。DUMPの8chは同じ走査の結果ですが、
+個別のGETでは走査の更新をまたぐ場合があります。各chは順番に測定され、同時測定ではありません。
+`--skip=N`は完全なDUMPをN件読み飛ばしてから次の1行を出力し、チャンネル単位では
+間引きません。`--loop`なしでも1行を出力するまで待機します。
+停止には`set CONTROL_FLAG=0`を使用します。既定表示とrawに対応し、
+JSON・CSV・TSVのフォーマット指定には対応しません。
+
+校正値はデバイス接続ごとに保持し、このプロセスで該当する校正レジスタを書き換えた
+後に再取得します。別プロセスで校正値を変更した場合、継続中のget/listenは再起動してください。
+不正な校正値やDUMPは通信エラーとなります。raw表示に校正値は不要です。
+
+```text
+td-usb tdfa60228 get
+td-usb tdfa60228 get ADC_VALUE_CH0 ADC_VALUE_CH7 --format=raw
+td-usb tdfa60228 get FIRMWARE_VERSION CALIBRATION_CH7
+td-usb tdfa60228 set CALIBRATION_CH0=3103 CALIBRATION_CH7=3098
+td-usb tdfa60228 save
+td-usb tdfa60228 set CONTROL_FLAG=4
+td-usb tdfa60228 listen --loop
+td-usb tdfa60228 listen ADC_VALUE_CH0 ADC_VALUE_CH7 --format=raw --skip=9 --loop
+td-usb tdfa60228 set CONTROL_FLAG=0
+```
+
+`init`と`dfu`は未対応です。`destroy`はファームウェアのRelease版にある消去処理を
+呼び出します。現在のファームにはブートローダがないため、復旧にはSWD書込みが必要であり、
+USB DFUモードには入りません。Debug版のファームはERASEを受け付けません。
+
+
 ### TDPC2401 USB挿抜コントローラ
 
 レジスタ名なしの `get` は `BRIDGE_STATUS` を返します。複数のレジスタ名を指定すると、

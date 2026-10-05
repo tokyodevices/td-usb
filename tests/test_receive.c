@@ -228,7 +228,7 @@ static void test_devices(void)
         context.device_type = listeners[i]();
         context.format = FORMAT_RAW;
         reset();
-        if (i == 2 || i == 3 || listeners[i] == tdfa60228_import) {
+        if (i == 2 || i == 3) {
             reply(0, INPACKET_DEVREG, 1, 0); /* ADC calibration before listen. */
             replies[0].payload[3] = 1;
         }
@@ -240,7 +240,7 @@ static void test_devices(void)
             }
         }
         int setup_reads = reply_count;
-        reply(10000, i < 2 ? 0x01 : INPACKET_DUMP, 0, 0); /* An event after more than 3 seconds. */
+        reply(10000, i < 2 ? 0x01 : INPACKET_DUMP, listeners[i] == tdfa60228_import ? 8 : 0, 0); /* An event after more than 3 seconds. */
         assert(context.device_type->listen(&context) == 0);
         assert(read_count == setup_reads + 1 && timeouts[setup_reads] == 0 && now == 20000);
         for (int j = 0; j < setup_reads; j++) assert(timeouts[j] == DEFAULT_TIMEOUT);

@@ -7,6 +7,9 @@ legacy ACKs, sensor replies, all event listeners, and the libusb read adapter.
 USB reports and elapsed time are simulated for the response tests.
 TDPC2401 tests cover register access, unsigned 32-bit boundaries, invalid inputs,
 read-only registers, write order, output formats and initialization.
+TDFA60228 tests cover all eight channels, register addresses and limits, per-device
+calibration and invalidation after SET, raw/current output, malformed DUMPs,
+channel selection, and skipping whole scans without losing channel alignment.
 
 On Windows, from an x64 Visual Studio developer command prompt at the repository
 root (without `NDEBUG`):
@@ -18,6 +21,8 @@ cl /nologo /D_CRT_SECURE_NO_WARNINGS tests\test_windows_read.c windows\tdhid-win
 tests\test_windows_read.exe
 cl /nologo /D_CRT_SECURE_NO_WARNINGS tests\test_tdpc2401.c devices\tdpc2401.c /Fe:tests\test_tdpc2401.exe
 tests\test_tdpc2401.exe
+cl /nologo /D_CRT_SECURE_NO_WARNINGS tests\test_tdfa60228.c devices\tdfa60228.c /Fe:tests\test_tdfa60228.exe
+tests\test_tdfa60228.exe
 ```
 
 The Windows adapter test uses a local overlapped pipe to exercise cancellation,
