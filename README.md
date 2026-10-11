@@ -37,6 +37,7 @@ CLI(Command Line Interface) for USB-based products of Tokyo Devices, Inc.
 |TDPC0201|["Reset Master" - a USB Watchdog](https://en.tokyodevices.com/items/288)|`tdpc0201`|
 |TDPC0205|["Clock Dongle" - a USB Real-Time Clock for Current Time Sync., Battery Backup](https://en.tokyodevices.com/items/319)|`tdpc0205`|
 |TDPC2401|USB Connection/Disconnection Controller|`tdpc2401`|
+|TDPW6620|1-channel USB LED Constant-Current Controller, 1 A|`tdpw6620`|
 |TDSN0700-UA|[USB General Purpose UV Sensor, UVA 295-490nm, Bus-Powered](https://en.tokyodevices.com/items/321)|`tdsn0700`|
 |TDSN0700-UB|[USB General Purpose UV Sensor, UVB 240-320nm, Bus-Powered](https://en.tokyodevices.com/items/322)|`tdsn0700`|
 |TDSN5200|[General-purpose, USB ToF Laser Distance Meter, Up to 6m, Bus-Powered](https://en.tokyodevices.com/items/326)|`tdsn5200`|
