@@ -40,6 +40,7 @@ extern td_device_t* (*tdsn7300_import)(void);
 extern td_device_t* (*iws600cm_import)(void);
 extern td_device_t* (*tdfa30301_import)(void);
 extern td_device_t* (*tdfa30303_import)(void);
+extern td_device_t* (*tdfa60228_import)(void);
 
 td_device_t *import_device_type(const char *model_name, int compare_length)
 {
@@ -74,6 +75,7 @@ td_device_t *import_device_type(const char *model_name, int compare_length)
 	if (!strncmp(model_name, "iws600cm", compare_length)) return iws600cm_import();
 	if (!strncmp(model_name, "tdfa30301", compare_length)) return tdfa30301_import();
 	if (!strncmp(model_name, "tdfa30303", compare_length)) return tdfa30303_import();
+	if (!strncmp(model_name, "tdfa60228", compare_length)) return tdfa60228_import();
 	return 0;
 }
 

@@ -54,7 +54,6 @@ int _nanosleep(int sec, int nsec)
 
 int TdTimer_Start(void pCallback(void *), void *pParam, int Interval)
 {
-	long long freq_nanosecs;
 	struct sigaction sa;
 	struct sigevent sev;
 	struct itimerspec its;
@@ -74,9 +73,9 @@ int TdTimer_Start(void pCallback(void *), void *pParam, int Interval)
 	if (timer_create(CLOCK_REALTIME, &sev, &timerid) == -1) throw_exception(54, "timer_create");
 
 	/* Start the timer */
-	freq_nanosecs = Interval * (1000 * 1000);
-	its.it_value.tv_sec = freq_nanosecs / 1000000000;
-	its.it_value.tv_nsec = freq_nanosecs % 1000000000;
+	/* Split milliseconds before converting to avoid integer overflow. */
+	its.it_value.tv_sec = Interval / 1000;
+	its.it_value.tv_nsec = (Interval % 1000) * 1000000;
 	its.it_interval.tv_sec = its.it_value.tv_sec;
 	its.it_interval.tv_nsec = its.it_value.tv_nsec;
 	if (timer_settime(timerid, 0, &its, NULL) == -1) throw_exception(55, "timer_settime");

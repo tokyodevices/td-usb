@@ -31,6 +31,7 @@ CLI(Command Line Interface) for USB-based products of Tokyo Devices, Inc.
 |TDFA50507|[7CH USB Digital Output Module with Optical Isolation and Current Sink](https://en.tokyodevices.com/items/308)|`tdfa50507`|
 |TDFA50607|[USB Digital Output Board, 7 Channels, 5/12/24V Output, Current Source Output, Bus-powered](https://en.tokyodevices.com/items/345)|`tdfa50607`|
 |TDFA60220|[USB AD Converter For 4-20mA Analog Current Signal with Galvanic Isolation](https://en.tokyodevices.com/items/311)|`tdfa60220`|
+|TDFA60228|8-channel isolated 4-20 mA USB current input board|`tdfa60228`|
 |TDFA60250|[USB AD Converter For 0-5V/1-5V Analog Signal with Galvanic Isolation](https://en.tokyodevices.com/items/314)|`tdfa60250`|
 |TDFA6032A|[USB Analog Output, 0-20mA/4-20mA Current Signal, Galvanic Isolation](https://en.tokyodevices.com/items/315)|`tdfa6032`|
 |TDFA60350|[USB to 0-5V/1-5V, Analog Signal Output, Galvanic Isolation, Bus-Powered](https://en.tokyodevices.com/items/323)|`tdfa60350`|
@@ -169,6 +170,70 @@ With `--loop` option, TD-USB read repeatedly `(name)=(value)` pair from the stan
 
 - After this operation the device will be unavailable until new firmware is written.
 
+
+
+### TDFA60228 eight-channel current input
+
+`get` with no register names reads CH0 through CH7. To read selected registers,
+give their names in the desired order. Each call prints one comma-separated row.
+The default format converts ADC values to mA using each channel's calibration:
+`current_mA = ADC_VALUE_CHn * 25.0 / CALIBRATION_CHn`. Values are not clamped to
+4-20 mA. `--format=raw` prints unsigned ADC counts instead, without reading
+calibration. Other registers print unsigned integers; the default format displays
+`FIRMWARE_VERSION` as `major.minor`, while raw displays its packed integer.
+
+|Register|Address|Access / valid SET values|Saved by `save`|
+|---|---|---|---|
+|`CONTROL_FLAG`|`0x00`|Read/write; 0: DUMP off, 4: DUMP on; default 0|Yes|
+|`CALIBRATION_CH0` through `CALIBRATION_CH7`|`0x01` through `0x08`|Read/write; 1-4095; default 3103|Yes|
+|`ADC_VALUE_CH0` through `ADC_VALUE_CH7`|`0x80` through `0x87`|Read-only; 0-4095; `0xFFFF`: measurement unavailable|No|
+|`FIRMWARE_VERSION`|`0xF2`|Read-only; `(major << 8) \| minor`|No|
+
+Channel numbers match the board's IN0 through IN7. Each calibration register is
+the ADC count at 25 mA for that channel. SET accepts unsigned decimal integers;
+reserved control bits, out-of-range values and read-only registers are rejected.
+All arguments are validated before any SET is sent, then applied in order.
+Use `save` explicitly to persist settings. The old single-channel names
+`ADC_VALUE` and `CALIBRATION` are not supported on TDFA60228.
+
+`listen` prints one row per DUMP containing CH0 through CH7, or the named
+`ADC_VALUE_CHn` registers in the requested order. Enable DUMP with
+`set CONTROL_FLAG=4` first; `listen` does not change this setting and waits
+indefinitely if no event arrives. DUMPs arrive every 100 ms, including failed ADC
+scans. Each DUMP contains all eight readings from one scan, while individual GETs
+can span successive scans. Channels are sampled sequentially, not simultaneously.
+`--skip=N` discards N complete DUMPs before printing the next row; it never drops
+individual channels. Without `--loop`, listen waits until it prints one row.
+Use `set CONTROL_FLAG=0` to stop DUMP. Default and raw formats are supported;
+JSON, CSV and TSV format switches are unsupported.
+
+Before the first successful measurement or after an ADC communication failure,
+the firmware returns `0xFFFF` (65535) for every channel. If `get` or `listen`
+receives this value, TD-USB reports "not yet measured or ADC communication failed"
+on stderr and exits with code 12 (`DEVICE_IO_ERROR`), including with `--format=raw`
+or `--loop`. The failed row produces no stdout output, even partially. `listen`
+checks all channels before applying `--skip`, so a skipped DUMP also reports errors.
+
+Calibration is cached per device connection and refreshed after this process
+writes the corresponding calibration register. Restart an ongoing get/listen
+command after calibration changes made by another process. Invalid calibration
+or malformed DUMPs produce a device I/O error; raw output needs no calibration.
+
+```text
+td-usb tdfa60228 get
+td-usb tdfa60228 get ADC_VALUE_CH0 ADC_VALUE_CH7 --format=raw
+td-usb tdfa60228 get FIRMWARE_VERSION CALIBRATION_CH7
+td-usb tdfa60228 set CALIBRATION_CH0=3103 CALIBRATION_CH7=3098
+td-usb tdfa60228 save
+td-usb tdfa60228 set CONTROL_FLAG=4
+td-usb tdfa60228 listen --loop
+td-usb tdfa60228 listen ADC_VALUE_CH0 ADC_VALUE_CH7 --format=raw --skip=9 --loop
+td-usb tdfa60228 set CONTROL_FLAG=0
+```
+
+`init` and `dfu` are unsupported. `destroy` retains the firmware's Release-only
+erase operation: the current firmware has no bootloader, so recovery requires
+SWD programming; this does not enter USB DFU mode. Debug firmware ignores ERASE.
 
 
 ### TDPC2401 USB connection controller

@@ -93,6 +93,7 @@ int TdHidReadInputReport(int* handle, unsigned char* buffer, int len, int timeou
 extern td_device_t* (*tdfa30604_import)(void);
 extern td_device_t* (*tdfa30608_import)(void);
 extern td_device_t* (*tdfa60220_import)(void);
+extern td_device_t* (*tdfa60228_import)(void);
 extern td_device_t* (*tdfa60250_import)(void);
 extern td_device_t* (*tdpc0201_import)(void);
 extern td_device_t* (*tdsn450_import)(void);
@@ -220,7 +221,7 @@ static void test_devices(void)
     td_device_t* (*listeners[])(void) = {
         tdfa30604_import, tdfa30608_import, tdfa60220_import, tdfa60250_import,
         tdpc0201_import, tdsn450_import, tdsn0700_import, tdsn5200_import,
-        tdsn604xx_import, tdsn7360_import, tdsn7400_import
+        tdsn604xx_import, tdsn7360_import, tdsn7400_import, tdfa60228_import
     };
     for (unsigned int i = 0; i < sizeof(listeners) / sizeof(listeners[0]); i++) {
         memset(&context, 0, sizeof(context));
@@ -239,10 +240,14 @@ static void test_devices(void)
             }
         }
         int setup_reads = reply_count;
-        reply(10000, i < 2 ? 0x01 : INPACKET_DUMP, 0, 0); /* An event after more than 3 seconds. */
+        reply(10000, i < 2 ? 0x01 : INPACKET_DUMP, listeners[i] == tdfa60228_import ? 8 : 0, 0); /* An event after more than 3 seconds. */
         assert(context.device_type->listen(&context) == 0);
         assert(read_count == setup_reads + 1 && timeouts[setup_reads] == 0 && now == 20000);
         for (int j = 0; j < setup_reads; j++) assert(timeouts[j] == DEFAULT_TIMEOUT);
+        if (listeners[i] == tdfa60228_import) {
+            assert(context.device_type->input_report_size == 64);
+            for (int j = 0; j < read_count; j++) assert(lengths[j] == 65);
+        }
         free(context.device_type);
     }
 }
@@ -254,7 +259,9 @@ int main(void)
     td_context_t context = { 0 };
     context.device_type = &device;
     test_commands(&context);
+    device.input_report_size = device.output_report_size = 64;
+    test_commands(&context);
     test_devices();
-    puts("PASS: response deadlines, retries, legacy ACKs, sensors and all 11 event listeners");
+    puts("PASS: 8/64-byte response deadlines, retries, legacy ACKs, sensors and all 12 event listeners");
     return 0;
 }
