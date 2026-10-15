@@ -185,7 +185,7 @@ calibration. Other registers print unsigned integers; the default format display
 |---|---|---|---|
 |`CONTROL_FLAG`|`0x00`|Read/write; 0: DUMP off, 4: DUMP on; default 0|Yes|
 |`CALIBRATION_CH0` through `CALIBRATION_CH7`|`0x01` through `0x08`|Read/write; 1-4095; default 3103|Yes|
-|`ADC_VALUE_CH0` through `ADC_VALUE_CH7`|`0x80` through `0x87`|Read-only; 0-4095|No|
+|`ADC_VALUE_CH0` through `ADC_VALUE_CH7`|`0x80` through `0x87`|Read-only; 0-4095; `0xFFFF`: measurement unavailable|No|
 |`FIRMWARE_VERSION`|`0xF2`|Read-only; `(major << 8) \| minor`|No|
 
 Channel numbers match the board's IN0 through IN7. Each calibration register is
@@ -198,13 +198,20 @@ Use `save` explicitly to persist settings. The old single-channel names
 `listen` prints one row per DUMP containing CH0 through CH7, or the named
 `ADC_VALUE_CHn` registers in the requested order. Enable DUMP with
 `set CONTROL_FLAG=4` first; `listen` does not change this setting and waits
-indefinitely if no event arrives. DUMPs arrive every 100 ms after successful ADC
+indefinitely if no event arrives. DUMPs arrive every 100 ms, including failed ADC
 scans. Each DUMP contains all eight readings from one scan, while individual GETs
 can span successive scans. Channels are sampled sequentially, not simultaneously.
 `--skip=N` discards N complete DUMPs before printing the next row; it never drops
 individual channels. Without `--loop`, listen waits until it prints one row.
 Use `set CONTROL_FLAG=0` to stop DUMP. Default and raw formats are supported;
 JSON, CSV and TSV format switches are unsupported.
+
+Before the first successful measurement or after an ADC communication failure,
+the firmware returns `0xFFFF` (65535) for every channel. If `get` or `listen`
+receives this value, TD-USB reports "not yet measured or ADC communication failed"
+on stderr and exits with code 12 (`DEVICE_IO_ERROR`), including with `--format=raw`
+or `--loop`. The failed row produces no stdout output, even partially. `listen`
+checks all channels before applying `--skip`, so a skipped DUMP also reports errors.
 
 Calibration is cached per device connection and refreshed after this process
 writes the corresponding calibration register. Restart an ongoing get/listen

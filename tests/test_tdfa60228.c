@@ -29,6 +29,7 @@ static struct { uint8_t bytes[65]; int result; } packets[16];
 static int packet_count, packet_reads;
 static jmp_buf error_jump;
 static int expected_error, error_seen;
+static const char* error_message;
 static const uint16_t adc_values[8] = {0, 400, 1200, 2400, 400, 1000, 2048, 4095};
 static const uint32_t calibrations[8] = {1000, 2000, 3000, 4000, 500, 1000, 2000, 4095};
 static const char* raw_row = "0,400,1200,2400,400,1000,2048,4095\n";
@@ -40,6 +41,7 @@ void throw_exception(int code, const char* message)
         fprintf(stderr, "Unexpected error %d: %s\n", code, message ? message : "");
     assert(expected_error != 0 && code == expected_error);
     error_seen = 1;
+    error_message = message;
     longjmp(error_jump, 1);
 }
 
@@ -106,6 +108,7 @@ static void invoke(td_context_t* context, int (*operation)(void*), const char* e
     assert(saved_stdout >= 0 && dup2(fileno(capture), fileno(stdout)) >= 0);
     expected_error = error;
     error_seen = 0;
+    error_message = NULL;
     if (setjmp(error_jump) == 0) assert(operation(context) == 0);
     assert(error_seen == (error != 0));
     expected_error = 0;
@@ -203,6 +206,56 @@ static void test_get(void)
     invoke(&context, context.device_type->get, "", EXITCODE_DEVICE_IO_ERROR);
     reset_registers();
     free(context.device_type);
+}
+
+static void test_invalid_adc(void)
+{
+    const char* unavailable =
+        "TDFA60228 ADC measurement unavailable (not yet measured or ADC communication failed).";
+    const uint8_t formats[] = {FORMAT_SIMPLE, FORMAT_RAW};
+    const uint32_t invalid[] = {0xFFFF, 4096, 0xFFFE, 0x10000, UINT32_MAX};
+    for (unsigned int format = 0; format < sizeof(formats) / sizeof(formats[0]); format++) {
+        td_context_t context = new_context();
+        uint16_t samples[8];
+        context.format = formats[format];
+        for (int channel = 0; channel < 8; channel++) {
+            registers[0][0x80 + channel] = 0xFFFF;
+            samples[channel] = 0xFFFF;
+        }
+        /* Firmware returns all-channel 0xFFFF before measurement or on ADC failure. */
+        reset_io();
+        invoke(&context, context.device_type->get, "", EXITCODE_DEVICE_IO_ERROR);
+        assert(strcmp(error_message, unavailable) == 0);
+        dump(samples);
+        invoke(&context, context.device_type->listen, "", EXITCODE_DEVICE_IO_ERROR);
+        assert(strcmp(error_message, unavailable) == 0 && packet_reads == 1);
+
+        reset_registers();
+        for (unsigned int i = 0; i < sizeof(invalid) / sizeof(invalid[0]); i++) {
+            /* A bad last channel must not leave a partial row on stdout. */
+            registers[0][0x87] = invalid[i];
+            reset_io();
+            invoke(&context, context.device_type->get, "", EXITCODE_DEVICE_IO_ERROR);
+            assert(strcmp(error_message, invalid[i] == 0xFFFF ? unavailable
+                : "Invalid TDFA60228 ADC value.") == 0);
+            if (invalid[i] <= UINT16_MAX) {
+                memcpy(samples, adc_values, sizeof(samples));
+                samples[7] = (uint16_t)invalid[i];
+                one_argument(&context, "ADC_VALUE_CH0");
+                context.skip = 1;
+                reset_io(); dump(samples); dump(adc_values);
+                invoke(&context, context.device_type->listen, "", EXITCODE_DEVICE_IO_ERROR);
+                assert(strcmp(error_message, invalid[i] == 0xFFFF ? unavailable
+                    : "Invalid TDFA60228 DUMP ADC value.") == 0);
+                /* Check all channels before skipping, including unselected CH7. */
+                assert(packet_reads == 1);
+                context.c = 0;
+                context.skip = 0;
+            }
+        }
+        free(context.device_type);
+        reset_registers();
+    }
 }
 
 static void check_set(td_context_t* context, const char* argument, int error, uint16_t addr, uint32_t value)
@@ -389,9 +442,10 @@ int main(void)
     free(device);
     reset_registers();
     test_get();
+    test_invalid_adc();
     test_set();
     test_calibration_lifetime();
     test_listen();
-    puts("PASS: TDFA60228 eight-channel registers, calibration, validation, DUMP rows and frame skipping");
+    puts("PASS: TDFA60228 eight-channel registers, calibration, ADC errors, DUMP rows and frame skipping");
     return 0;
 }

@@ -22,6 +22,7 @@
 #define ADDR_FIRMWARE_VERSION 0xF2
 #define CONTROL_DUMP_ENABLE 0x04
 #define ADC_MAX             4095
+#define ADC_INVALID         0xFFFF
 
 /* The public device is first so delete_device_type() can free this allocation.
  * Calibration belongs to this device/handle, never to another serial number. */
@@ -87,6 +88,14 @@ static uint32_t calibration_value(td_context_t* context, int channel)
     return state->calibration[channel];
 }
 
+static void validate_adc_value(uint32_t value, const char* invalid_message)
+{
+    if (value == ADC_INVALID)
+        throw_exception(EXITCODE_DEVICE_IO_ERROR,
+            "TDFA60228 ADC measurement unavailable (not yet measured or ADC communication failed).");
+    if (value > ADC_MAX) throw_exception(EXITCODE_DEVICE_IO_ERROR, invalid_message);
+}
+
 static void validate_format(td_context_t* context)
 {
     if (context->format != FORMAT_SIMPLE && context->format != FORMAT_RAW)
@@ -137,8 +146,7 @@ static int get(void* opaque)
         values[i] = tddev2_read_devreg(context, addresses[i]);
         int channel = adc_channel(addresses[i]);
         if (channel >= 0) {
-            if (values[i] > ADC_MAX)
-                throw_exception(EXITCODE_DEVICE_IO_ERROR, "Invalid TDFA60228 ADC value.");
+            validate_adc_value(values[i], "Invalid TDFA60228 ADC value.");
             if (context->format == FORMAT_SIMPLE) calibration_value(context, channel);
         }
     }
@@ -210,8 +218,7 @@ static int listen(void* opaque)
             throw_exception(EXITCODE_DEVICE_IO_ERROR, "Invalid TDFA60228 DUMP channel count.");
         for (int channel = 0; channel < CHANNEL_COUNT; channel++) {
             samples[channel] = (uint16_t)(buffer[3 + channel * 2] | ((uint16_t)buffer[4 + channel * 2] << 8));
-            if (samples[channel] > ADC_MAX)
-                throw_exception(EXITCODE_DEVICE_IO_ERROR, "Invalid TDFA60228 DUMP ADC value.");
+            validate_adc_value(samples[channel], "Invalid TDFA60228 DUMP ADC value.");
         }
         /* Skip complete scans; a one-shot listen still produces one full row. */
         if (skipped < context->skip) { skipped++; continue; }

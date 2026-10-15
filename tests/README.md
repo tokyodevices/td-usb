@@ -13,6 +13,8 @@ read-only registers, write order, output formats and initialization.
 TDFA60228 tests cover all eight channels, register addresses and limits, per-device
 calibration and invalidation after SET, raw/current output, malformed DUMPs,
 channel selection, and skipping whole scans without losing channel alignment.
+They also check the explicit `0xFFFF` measurement-unavailable error in GET/DUMP,
+in both raw and current formats, with no partial output and validation before skip.
 
 On Windows, from an x64 Visual Studio developer command prompt at the repository
 root (without `NDEBUG`):
