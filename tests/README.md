@@ -5,6 +5,9 @@ The tests do not access USB hardware. Response tests cover 8-byte and 64-byte re
 On Linux, run `make -C tests test`. This tests response deadlines, GET retries,
 legacy ACKs, sensor replies, all event listeners, and the libusb read adapter.
 USB reports and elapsed time are simulated for the response tests.
+Linux timer tests check initial and repeating intervals, including 3/5 seconds,
+the former 32-bit nanosecond overflow boundaries, and INT_MAX milliseconds.
+Timer requests are intercepted so these checks do not wait for each interval.
 TDPC2401 tests cover register access, unsigned 32-bit boundaries, invalid inputs,
 read-only registers, write order, output formats and initialization.
 TDFA60228 tests cover all eight channels, register addresses and limits, per-device

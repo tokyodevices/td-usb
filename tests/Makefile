@@ -2,11 +2,12 @@ CC = gcc
 CFLAGS = -Wall -Wextra -g
 
 .PHONY: test clean
-test: test_receive test_libusb_read test_tdpc2401 test_tdfa60228
+test: test_receive test_libusb_read test_tdpc2401 test_tdfa60228 test_tdtimer_posix
 	./test_receive
 	./test_libusb_read
 	./test_tdpc2401
 	./test_tdfa60228
+	./test_tdtimer_posix
 
 test_receive: test_receive.c ../tddevice.c ../tddevice.h ../tdhid.h ../tdtimer.h ../td-usb.h $(wildcard ../devices/*.c)
 	$(CC) $(CFLAGS) test_receive.c ../tddevice.c ../devices/*.c -o $@ -lm
@@ -20,5 +21,8 @@ test_tdpc2401: test_tdpc2401.c ../devices/tdpc2401.c ../tddevice.h ../td-usb.h
 test_tdfa60228: test_tdfa60228.c ../devices/tdfa60228.c ../tddevice.h ../tdhid.h ../td-usb.h
 	$(CC) $(CFLAGS) test_tdfa60228.c ../devices/tdfa60228.c -o $@
 
+test_tdtimer_posix: test_tdtimer_posix.c ../linux/tdtimer-posix.c ../tdtimer.h ../td-usb.h
+	$(CC) $(CFLAGS) test_tdtimer_posix.c ../linux/tdtimer-posix.c -o $@ -lrt -Wl,--wrap=timer_settime
+
 clean:
-	rm -f test_receive test_libusb_read test_tdpc2401 test_tdfa60228
+	rm -f test_receive test_libusb_read test_tdpc2401 test_tdfa60228 test_tdtimer_posix
