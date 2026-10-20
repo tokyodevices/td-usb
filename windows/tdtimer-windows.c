@@ -17,7 +17,7 @@ uint64_t TdTimer_GetMilliseconds(void)
 static void(*pUserHandler)(void *);
 static void *pUserParam;
 
-static void CALLBACK MyTimerCallback(UINT wTimerID, UINT msg, DWORD dwUser, DWORD dw1, DWORD dw2)
+static void CALLBACK MyTimerCallback(UINT wTimerID, UINT msg, DWORD_PTR dwUser, DWORD_PTR dw1, DWORD_PTR dw2)
 {
 	pUserHandler(pUserParam);
 }
@@ -28,7 +28,15 @@ int TdTimer_Start(void pCallback(void *), void *pParam, int Interval)
 	pUserParam = pParam;
 
 	HANDLE hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-	timeSetEvent(Interval, 10, (LPTIMECALLBACK)MyTimerCallback, 0, TIME_PERIODIC);
-	WaitForSingleObject(hEvent, INFINITE);
-	return 0;
+	if (hEvent == NULL) return -1;
+	MMRESULT timer = timeSetEvent(Interval, 10, MyTimerCallback, 0, TIME_PERIODIC | TIME_KILL_SYNCHRONOUS);
+	if (timer == 0)
+	{
+		CloseHandle(hEvent);
+		return -1;
+	}
+	DWORD result = WaitForSingleObject(hEvent, INFINITE);
+	timeKillEvent(timer);
+	CloseHandle(hEvent);
+	return result == WAIT_OBJECT_0 ? 0 : -1;
 }

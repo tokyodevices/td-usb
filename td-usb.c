@@ -12,6 +12,7 @@
 #include <signal.h>
 #include <time.h>
 #include <errno.h>
+#include <limits.h>
 
 #include "td-usb.h"
 #include "tdtimer.h"
@@ -24,7 +25,9 @@ static td_context_t *context = NULL;
 
 void sigint_handler(int sig) 
 {
-	throw_exception(0, NULL);
+	(void)sig;
+	/* Do not re-enter cleanup or free resources used by a timer callback. */
+	_Exit(EXITCODE_NO_ERROR);
 }
 
 /**
@@ -73,6 +76,25 @@ void debug_print(const char* msg, ...)
 		vprintf(msg, args);
 		va_end(args);
 	}
+}
+
+static int parse_integer_option(const char *value, int minimum, const char *option)
+{
+	char *end;
+	errno = 0;
+	long number = strtol(value, &end, 10);
+	if (end == value || *end != '\0' || errno == ERANGE || number < minimum || number > INT_MAX)
+	{
+		fprintf(stderr, "Invalid value for %s (expected %d..%d).\n", option, minimum, INT_MAX);
+		throw_exception(EXITCODE_INVALID_OPTION, NULL);
+	}
+	return (int)number;
+}
+
+static void get_timer_tick(void *parameter)
+{
+	td_context_t *timer_context = (td_context_t *)parameter;
+	timer_context->device_type->get(timer_context);
 }
 
 static void parse_args(int argc, char *argv[])
@@ -127,7 +149,7 @@ static void parse_args(int argc, char *argv[])
 	{
 		if ( strlen(argv[i]) >= 2 && (argv[i][0] == '-' && argv[i][1] == '-') )
 		{
-			if (strncmp("--format", argv[i], 8) == 0)
+			if (strcmp("--format", argv[i]) == 0 || strncmp("--format=", argv[i], 9) == 0)
 			{
 				p = strchr(argv[i], '=');
 				if (p == NULL)
@@ -135,31 +157,28 @@ static void parse_args(int argc, char *argv[])
 					fprintf(stderr, "No format is specified.\n");
 					throw_exception(EXITCODE_INVALID_OPTION, NULL);
 				}
-				if (strcmp("json", p + 1) == 0) context->format = FORMAT_JSON;
-				if (strcmp("raw", p + 1) == 0) context->format = FORMAT_RAW;
-				if (strcmp("csv", p + 1) == 0) context->format = FORMAT_CSV;
-				if (strcmp("tsv", p + 1) == 0) context->format = FORMAT_TSV;
+				if (strcmp("simple", p + 1) == 0) context->format = FORMAT_SIMPLE;
+				else if (strcmp("json", p + 1) == 0) context->format = FORMAT_JSON;
+				else if (strcmp("raw", p + 1) == 0) context->format = FORMAT_RAW;
+				else if (strcmp("csv", p + 1) == 0) context->format = FORMAT_CSV;
+				else if (strcmp("tsv", p + 1) == 0) context->format = FORMAT_TSV;
+				else throw_exception(EXITCODE_INVALID_FORMAT, ERROR_MSG_INVALID_FORMAT);
 			}
-			else if (strncmp("--loop", argv[i], 6) == 0)
+			else if (strcmp("--loop", argv[i]) == 0 || strncmp("--loop=", argv[i], 7) == 0)
 			{
 				context->loop = TRUE;
 
 				p = strchr(argv[i], '=');
 				if (p != NULL)
 				{
-					context->interval = atoi(p + 1);
-					if (context->interval < OPTION_MIN_INTERVAL)
-					{
-						fprintf(stderr, "Interval must be >= %d msec.\n", OPTION_MIN_INTERVAL);
-						throw_exception(EXITCODE_INVALID_OPTION, NULL);
-					}
+					context->interval = parse_integer_option(p + 1, OPTION_MIN_INTERVAL, "--loop");
 				}
 				else
 				{
 					context->interval = OPTION_DEFAULT_INTERVAL;
 				}
 			}
-			else if (strncmp("--skip", argv[i], 6) == 0)
+			else if (strcmp("--skip", argv[i]) == 0 || strncmp("--skip=", argv[i], 7) == 0)
 			{
 				p = strchr(argv[i], '=');
 				if (p == NULL)
@@ -168,32 +187,30 @@ static void parse_args(int argc, char *argv[])
 					throw_exception(EXITCODE_INVALID_OPTION, NULL);
 				}
 
-				context->skip = atoi(p + 1);
-				if (context->skip < OPTION_MIN_SKIP)
-				{
-					fprintf(stderr, "Skip count must be >= %d.\n", OPTION_MIN_SKIP);
-					throw_exception(EXITCODE_INVALID_OPTION, NULL);
-				}
+				context->skip = parse_integer_option(p + 1, OPTION_MIN_SKIP, "--skip");
 			}
-			else if (strncmp("--verbose", argv[i], 9) == 0)
+			else if (strcmp("--verbose", argv[i]) == 0)
 			{
 				context->verbose = TRUE;
+			}
+			else
+			{
+				fprintf(stderr, "Unknown option: %s\n", argv[i]);
+				throw_exception(EXITCODE_INVALID_OPTION, NULL);
 			}
 		}
 		else
 		{
 			if (context->c >= TD_CONTEXT_MAX_ARG_COUNT)
 			{
-				fprintf(stderr, "Option count must be < %d\n", TD_CONTEXT_MAX_ARG_COUNT);
+				fprintf(stderr, "Option count must be <= %d\n", TD_CONTEXT_MAX_ARG_COUNT);
 				throw_exception(EXITCODE_INVALID_OPTION, NULL);
 			}
 			else
 			{
 				context->v[context->c] = argv[i];
 				context->c++;
-				DEBUG_PRINT(("OPTION:"));
-				DEBUG_PRINT((argv[i]));
-				DEBUG_PRINT(("\n"));
+				DEBUG_PRINT(("OPTION:%s\n", argv[i]));
 			}
 		}
 	}
@@ -209,6 +226,8 @@ int main(int argc, char *argv[])
 	signal(SIGINT, sigint_handler);
 
 	context = (td_context_t *)malloc(sizeof(td_context_t));
+	if (context == NULL)
+		throw_exception(EXITCODE_DEVICE_OPEN_ERROR, "Failed to allocate context.");
 	memset(context, 0, sizeof(td_context_t));
 	parse_args(argc, argv);
 
@@ -275,7 +294,8 @@ int main(int argc, char *argv[])
 		if (context->device_type->get != NULL)
 		{
 			context->device_type->get(context);
-			if (context->interval > 0)	TdTimer_Start(context->device_type->get, context, context->interval);
+			if (context->interval > 0 && TdTimer_Start(get_timer_tick, context, context->interval) != 0)
+				throw_exception(EXITCODE_DEVICE_IO_ERROR, "Failed to start or wait for periodic timer.");
 		}
 		else
 		{
@@ -295,6 +315,15 @@ int main(int argc, char *argv[])
 				{
 					if (fgets(buffer, TD_SETLOOP_BUFFER_SIZE, stdin) == NULL) break;
 
+					/* A full buffer may end exactly at a newline or EOF. */
+					if (strchr(buffer, '\n') == NULL && strlen(buffer) == sizeof(buffer) - 1)
+					{
+						int next = fgetc(stdin);
+						if (next != '\n' && next != EOF)
+							throw_exception(EXITCODE_INVALID_OPTION, "Input line is too long.");
+					}
+					if (ferror(stdin))
+						throw_exception(EXITCODE_INVALID_OPTION, "Failed to read standard input.");
 					buffer[strcspn(buffer, "\n")] = '\0';
 
 					context->c = 0;
@@ -305,8 +334,12 @@ int main(int argc, char *argv[])
 						token = strtok(NULL, " ");
 					}
 
+					if (token != NULL)
+						throw_exception(EXITCODE_INVALID_OPTION, "Too many arguments in input line.");
 					context->device_type->set(context);
 				}
+				if (ferror(stdin))
+					throw_exception(EXITCODE_INVALID_OPTION, "Failed to read standard input.");
 			}
 			else
 			{

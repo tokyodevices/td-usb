@@ -42,40 +42,46 @@ extern td_device_t* (*tdfa30301_import)(void);
 extern td_device_t* (*tdfa30303_import)(void);
 extern td_device_t* (*tdfa60228_import)(void);
 
+static int model_name_matches(const char *model_name, int length, const char *expected)
+{
+	return length > 0 && strlen(expected) == (size_t)length &&
+		strncmp(model_name, expected, (size_t)length) == 0;
+}
+
 td_device_t *import_device_type(const char *model_name, int compare_length)
 {
-	if (!strncmp(model_name, "tdfa50507", compare_length)) return tdfa50507_import();
-	if (!strncmp(model_name, "tdfa30604", compare_length)) return tdfa30604_import();
-	if (!strncmp(model_name, "tdfa30608", compare_length)) return tdfa30608_import();
-	if (!strncmp(model_name, "tdpc0201", compare_length)) return tdpc0201_import();
-	if (!strncmp(model_name, "iwt120", compare_length)) return iwt120_import();
-	if (!strncmp(model_name, "iws660", compare_length)) return iws660_import();
-	if (!strncmp(model_name, "iws73x", compare_length)) return iws73x_import();
-	if (!strncmp(model_name, "iwt303", compare_length)) return iwt303_import();
-	if (!strncmp(model_name, "iwt313", compare_length)) return iwt313_import();
-	if (!strncmp(model_name, "iwt1320", compare_length)) return iwt1320_import();
-	if (!strncmp(model_name, "tdsn450", compare_length)) return tdsn450_import();
-	if (!strncmp(model_name, "tdfa60220", compare_length)) return tdfa60220_import();
-	if (!strncmp(model_name, "tdfa60250", compare_length)) return tdfa60250_import();
-	if (!strncmp(model_name, "tdfa6032", compare_length)) return tdfa6032_import();
-	if (!strncmp(model_name, "tdpc0205", compare_length)) return tdpc0205_import();
-	if (!strncmp(model_name, "tdpc2401", compare_length)) return tdpc2401_import();
-	if (!strncmp(model_name, "tdpw6620", compare_length)) return tdpw6620_import();
-	if (!strncmp(model_name, "tdsn0700", compare_length)) return tdsn0700_import();
-	if (!strncmp(model_name, "tdfa60350", compare_length)) return tdfa60350_import();
-	if (!strncmp(model_name, "tdsn5200", compare_length)) return tdsn5200_import();
-	if (!strncmp(model_name, "tdsn7200", compare_length)) return tdsn7200_import();
-	if (!strncmp(model_name, "tdsn604xx", compare_length)) return tdsn604xx_import();
-	if (!strncmp(model_name, "tdsn7400", compare_length)) return tdsn7400_import();
-	if (!strncmp(model_name, "tdsn7360", compare_length)) return tdsn7360_import();
-	if (!strncmp(model_name, "tdsn7502", compare_length)) return tdsn7502_import();
-	if (!strncmp(model_name, "tdfa1104", compare_length)) return tdfa1104_import();
-	if (!strncmp(model_name, "tdfa50607", compare_length)) return tdfa50607_import();
-	if (!strncmp(model_name, "tdsn7300", compare_length)) return tdsn7300_import();
-	if (!strncmp(model_name, "iws600cm", compare_length)) return iws600cm_import();
-	if (!strncmp(model_name, "tdfa30301", compare_length)) return tdfa30301_import();
-	if (!strncmp(model_name, "tdfa30303", compare_length)) return tdfa30303_import();
-	if (!strncmp(model_name, "tdfa60228", compare_length)) return tdfa60228_import();
+	if (model_name_matches(model_name, compare_length, "tdfa50507")) return tdfa50507_import();
+	if (model_name_matches(model_name, compare_length, "tdfa30604")) return tdfa30604_import();
+	if (model_name_matches(model_name, compare_length, "tdfa30608")) return tdfa30608_import();
+	if (model_name_matches(model_name, compare_length, "tdpc0201")) return tdpc0201_import();
+	if (model_name_matches(model_name, compare_length, "iwt120")) return iwt120_import();
+	if (model_name_matches(model_name, compare_length, "iws660")) return iws660_import();
+	if (model_name_matches(model_name, compare_length, "iws73x")) return iws73x_import();
+	if (model_name_matches(model_name, compare_length, "iwt303")) return iwt303_import();
+	if (model_name_matches(model_name, compare_length, "iwt313")) return iwt313_import();
+	if (model_name_matches(model_name, compare_length, "iwt1320")) return iwt1320_import();
+	if (model_name_matches(model_name, compare_length, "tdsn450")) return tdsn450_import();
+	if (model_name_matches(model_name, compare_length, "tdfa60220")) return tdfa60220_import();
+	if (model_name_matches(model_name, compare_length, "tdfa60250")) return tdfa60250_import();
+	if (model_name_matches(model_name, compare_length, "tdfa6032")) return tdfa6032_import();
+	if (model_name_matches(model_name, compare_length, "tdpc0205")) return tdpc0205_import();
+	if (model_name_matches(model_name, compare_length, "tdpc2401")) return tdpc2401_import();
+	if (model_name_matches(model_name, compare_length, "tdpw6620")) return tdpw6620_import();
+	if (model_name_matches(model_name, compare_length, "tdsn0700")) return tdsn0700_import();
+	if (model_name_matches(model_name, compare_length, "tdfa60350")) return tdfa60350_import();
+	if (model_name_matches(model_name, compare_length, "tdsn5200")) return tdsn5200_import();
+	if (model_name_matches(model_name, compare_length, "tdsn7200")) return tdsn7200_import();
+	if (model_name_matches(model_name, compare_length, "tdsn604xx")) return tdsn604xx_import();
+	if (model_name_matches(model_name, compare_length, "tdsn7400")) return tdsn7400_import();
+	if (model_name_matches(model_name, compare_length, "tdsn7360")) return tdsn7360_import();
+	if (model_name_matches(model_name, compare_length, "tdsn7502")) return tdsn7502_import();
+	if (model_name_matches(model_name, compare_length, "tdfa1104")) return tdfa1104_import();
+	if (model_name_matches(model_name, compare_length, "tdfa50607")) return tdfa50607_import();
+	if (model_name_matches(model_name, compare_length, "tdsn7300")) return tdsn7300_import();
+	if (model_name_matches(model_name, compare_length, "iws600cm")) return iws600cm_import();
+	if (model_name_matches(model_name, compare_length, "tdfa30301")) return tdfa30301_import();
+	if (model_name_matches(model_name, compare_length, "tdfa30303")) return tdfa30303_import();
+	if (model_name_matches(model_name, compare_length, "tdfa60228")) return tdfa60228_import();
 	return 0;
 }
 

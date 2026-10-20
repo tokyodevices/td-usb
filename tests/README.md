@@ -7,6 +7,10 @@ legacy ACKs, sensor replies, all event listeners, and the libusb read adapter.
 Linux adapter tests also cover short Feature reports, model/serial filtering,
 failed descriptor reads, invalid configurations, claim cleanup and discovery
 errors. The CLI fixture checks errors in both phases of device listing.
+Common CLI tests cover exact model names, invalid options and integer bounds,
+output formats, literal verbose logging, stdin line/argument limits, allocation
+and timer failures, and immediate SIGINT termination without re-entering cleanup.
+Windows timer tests inject event/timer/wait failures and verify resource cleanup.
 USB reports and elapsed time are simulated for the response tests.
 Linux timer tests check initial and repeating intervals, including 3/5 seconds,
 the former 32-bit nanosecond overflow boundaries, and INT_MAX milliseconds.
@@ -23,6 +27,10 @@ On Windows, from an x64 Visual Studio developer command prompt at the repository
 root (without `NDEBUG`):
 
 ```
+cl /nologo /D_CRT_SECURE_NO_WARNINGS tests\test_common_cli.c /Fe:tests\test_common_cli.exe
+tests\test_common_cli.exe
+cl /nologo /D_CRT_SECURE_NO_WARNINGS tests\test_windows_timer.c /Fe:tests\test_windows_timer.exe
+tests\test_windows_timer.exe
 cl /nologo /D_CRT_SECURE_NO_WARNINGS tests\test_receive.c tddevice.c devices\*.c /Fe:tests\test_receive.exe
 tests\test_receive.exe
 cl /nologo /D_CRT_SECURE_NO_WARNINGS tests\test_windows_read.c windows\tdhid-windows.c windows\tdtimer-windows.c /Fe:tests\test_windows_read.exe /link hid.lib setupapi.lib
