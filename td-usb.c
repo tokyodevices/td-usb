@@ -219,6 +219,8 @@ int main(int argc, char *argv[])
 			context->device_type->product_id,
 			context->device_type->product_name,
 			NULL, 0);
+		if (len <= 0)
+			throw_exception(EXITCODE_DEVICE_OPEN_ERROR, "Failed to enumerate USB devices.");
 		char* p = (char*)malloc(len);
 		if (p == NULL)
 			throw_exception(EXITCODE_DEVICE_OPEN_ERROR, "Failed to allocate device list.");
@@ -227,6 +229,10 @@ int main(int argc, char *argv[])
 			context->device_type->product_id,
 			context->device_type->product_name,
 			p, len);
+		if (required <= 0) {
+			free(p);
+			throw_exception(EXITCODE_DEVICE_OPEN_ERROR, "Failed to enumerate USB devices.");
+		}
 		if (required > len) {
 			free(p);
 			throw_exception(EXITCODE_DEVICE_OPEN_ERROR, "Device list changed during enumeration. Please retry.");

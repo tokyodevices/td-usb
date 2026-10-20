@@ -4,6 +4,9 @@ The tests do not access USB hardware. Response tests cover 8-byte and 64-byte re
 
 On Linux, run `make -C tests test`. This tests response deadlines, GET retries,
 legacy ACKs, sensor replies, all event listeners, and the libusb read adapter.
+Linux adapter tests also cover short Feature reports, model/serial filtering,
+failed descriptor reads, invalid configurations, claim cleanup and discovery
+errors. The CLI fixture checks errors in both phases of device listing.
 USB reports and elapsed time are simulated for the response tests.
 Linux timer tests check initial and repeating intervals, including 3/5 seconds,
 the former 32-bit nanosecond overflow boundaries, and INT_MAX milliseconds.
@@ -32,6 +35,8 @@ tests\test_list_cli.exe empty list
 tests\test_list_cli.exe shrink list
 tests\test_list_cli.exe grow list
 tests\test_list_cli.exe allocation-failure list
+tests\test_list_cli.exe discovery-size-failure list
+tests\test_list_cli.exe discovery-fill-failure list
 cl /nologo /D_CRT_SECURE_NO_WARNINGS tests\test_tdpc2401.c devices\tdpc2401.c /Fe:tests\test_tdpc2401.exe
 tests\test_tdpc2401.exe
 cl /nologo /D_CRT_SECURE_NO_WARNINGS tests\test_tdfa60228.c devices\tdfa60228.c /Fe:tests\test_tdfa60228.exe
@@ -43,7 +48,8 @@ checks string conversion, full-length USB strings, exact and insufficient list
 buffers, hotplug growth, and cleanup after discovery/allocation/attribute errors.
 The CLI fixture runs the real argument parsing and list command with simulated
 devices. `stable` and `shrink` print `1111`; `empty` prints a blank line, all with
-exit code 0. `grow` and `allocation-failure` must exit with code 11, produce no
+exit code 0. `grow`, `allocation-failure`, `discovery-size-failure` and
+`discovery-fill-failure` must exit with code 11, produce no
 stdout, and report the corresponding error on stderr. No USB hardware is used.
 
 The Windows adapter test uses a local overlapped pipe to exercise cancellation,

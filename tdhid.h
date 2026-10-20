@@ -21,6 +21,7 @@
 
 
 // Returns the required byte count including NUL; NULL queries the size.
+// A negative return value reports an enumeration failure.
 // If the return value exceeds szBuffer, discard the incomplete output.
 int TdHidListDevices(uint16_t vendor, uint16_t product, const char *name, char *lpBuffer, int szBuffer);
 int *TdHidOpenDevice(uint16_t vendor_id, uint16_t product_id, const char *name, char *serial);

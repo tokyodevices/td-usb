@@ -12,6 +12,7 @@ static int allocations, list_calls;
 static void* test_malloc(size_t size)
 {
     allocations++;
+    if (allocations == 2) assert(strcmp(scenario, "discovery-size-failure") != 0);
     /* The context is the first allocation, the list buffer is the second. */
     if (allocations == 2 && strcmp(scenario, "allocation-failure") == 0) return NULL;
     return malloc(size);
@@ -38,10 +39,12 @@ int TdHidListDevices(uint16_t vendor, uint16_t product, const char* name, char* 
     assert(list_calls <= 2); /* No implicit retry on a changing device list. */
     if (list_calls == 1) {
         assert(buffer == NULL && capacity == 0);
+        if (!strcmp(scenario, "discovery-size-failure")) return -1;
         if (!strcmp(scenario, "empty") || !strcmp(scenario, "grow")) return 1;
         return !strcmp(scenario, "shrink") ? 10 : 5;
     }
     assert(buffer != NULL && strcmp(scenario, "allocation-failure") != 0);
+    if (!strcmp(scenario, "discovery-fill-failure")) return -1;
     if (!strcmp(scenario, "grow")) {
         assert(capacity == 1);
         buffer[0] = 0;
