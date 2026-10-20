@@ -24,11 +24,27 @@ cl /nologo /D_CRT_SECURE_NO_WARNINGS tests\test_receive.c tddevice.c devices\*.c
 tests\test_receive.exe
 cl /nologo /D_CRT_SECURE_NO_WARNINGS tests\test_windows_read.c windows\tdhid-windows.c windows\tdtimer-windows.c /Fe:tests\test_windows_read.exe /link hid.lib setupapi.lib
 tests\test_windows_read.exe
+cl /nologo /D_CRT_SECURE_NO_WARNINGS tests\test_windows_enumeration.c /Fe:tests\test_windows_enumeration.exe /link hid.lib setupapi.lib
+tests\test_windows_enumeration.exe
+cl /nologo /D_CRT_SECURE_NO_WARNINGS tests\test_list_cli.c /Fe:tests\test_list_cli.exe
+tests\test_list_cli.exe stable list
+tests\test_list_cli.exe empty list
+tests\test_list_cli.exe shrink list
+tests\test_list_cli.exe grow list
+tests\test_list_cli.exe allocation-failure list
 cl /nologo /D_CRT_SECURE_NO_WARNINGS tests\test_tdpc2401.c devices\tdpc2401.c /Fe:tests\test_tdpc2401.exe
 tests\test_tdpc2401.exe
 cl /nologo /D_CRT_SECURE_NO_WARNINGS tests\test_tdfa60228.c devices\tdfa60228.c /Fe:tests\test_tdfa60228.exe
 tests\test_tdfa60228.exe
 ```
+
+The enumeration test mocks device discovery and uses local event handles. It
+checks string conversion, full-length USB strings, exact and insufficient list
+buffers, hotplug growth, and cleanup after discovery/allocation/attribute errors.
+The CLI fixture runs the real argument parsing and list command with simulated
+devices. `stable` and `shrink` print `1111`; `empty` prints a blank line, all with
+exit code 0. `grow` and `allocation-failure` must exit with code 11, produce no
+stdout, and report the corresponding error on stderr. No USB hardware is used.
 
 The Windows adapter test uses a local overlapped pipe to exercise cancellation,
 subsequent reads, a delayed event beyond three seconds, short reads, and disconnect.

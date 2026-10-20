@@ -220,11 +220,17 @@ int main(int argc, char *argv[])
 			context->device_type->product_name,
 			NULL, 0);
 		char* p = (char*)malloc(len);
-		TdHidListDevices(
+		if (p == NULL)
+			throw_exception(EXITCODE_DEVICE_OPEN_ERROR, "Failed to allocate device list.");
+		int required = TdHidListDevices(
 			context->device_type->vendor_id,
 			context->device_type->product_id,
 			context->device_type->product_name,
-			p, len);	
+			p, len);
+		if (required > len) {
+			free(p);
+			throw_exception(EXITCODE_DEVICE_OPEN_ERROR, "Device list changed during enumeration. Please retry.");
+		}
 		printf("%s\n",p);
 		free(p);		
 		throw_exception(EXITCODE_NO_ERROR, NULL);

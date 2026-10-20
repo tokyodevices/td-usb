@@ -32,70 +32,85 @@ void convertUniToAscii(char *buffer)
 {
 	unsigned short  *uni = (unsigned short *)buffer;
 	char            *ascii = buffer;
-	while (*uni != 0) *ascii++ = (*uni >= 256) ? '?' : ((char)*uni++);
-	*ascii++ = 0;
+	while (*uni != 0) {
+		unsigned short c = *uni++;
+		*ascii++ = (c >= 256) ? '?' : (char)c;
+	}
+	*ascii = '\0';
 }
 
 int open_device(LPHANDLE lpHandle, GUID *pGUID, HDEVINFO deviceInfoList, int i, UINT16 vendor_id, UINT16 product_id)
 {
 	HIDD_ATTRIBUTES                     deviceAttributes;
-	SP_DEVICE_INTERFACE_DATA            deviceInfo;
-	DWORD                               size;
+	SP_DEVICE_INTERFACE_DATA            deviceInfo = { 0 };
+	DWORD                               size = 0;
 	SP_DEVICE_INTERFACE_DETAIL_DATA     *deviceDetails = NULL;
-	BOOLEAN								bResult;
+	HANDLE                              handle = INVALID_HANDLE_VALUE;
+	int                                 result = 6; // Interface detail error.
 
+	*lpHandle = INVALID_HANDLE_VALUE;
 	deviceInfo.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
 	if (!SetupDiEnumDeviceInterfaces(deviceInfoList, NULL, pGUID, i, &deviceInfo)) {
-		*lpHandle = INVALID_HANDLE_VALUE;
 		return 1;
 	}
 
-	SetupDiGetDeviceInterfaceDetail(deviceInfoList, &deviceInfo, NULL, 0, (PDWORD)&size, NULL);
+	// A size query is expected to fail with ERROR_INSUFFICIENT_BUFFER.
+	if (SetupDiGetDeviceInterfaceDetail(deviceInfoList, &deviceInfo, NULL, 0, &size, NULL) ||
+		GetLastError() != ERROR_INSUFFICIENT_BUFFER || size < sizeof(*deviceDetails))
+		goto cleanup;
+
 	deviceDetails = (SP_DEVICE_INTERFACE_DETAIL_DATA *)malloc(size);
 	if (deviceDetails == NULL)
 	{
 		DEBUG_PRINT(("  Open failed.\n"));
-		return 4;
+		result = 4;
+		goto cleanup;
 	}
 	deviceDetails->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
-	SetupDiGetDeviceInterfaceDetail(deviceInfoList, &deviceInfo, deviceDetails, size, (PDWORD)&size, NULL);
+	if (!SetupDiGetDeviceInterfaceDetail(deviceInfoList, &deviceInfo, deviceDetails, size, &size, NULL))
+		goto cleanup;
 	DEBUG_PRINT(("  Path: \"%s\"\n", deviceDetails->DevicePath));
 
-	*lpHandle = CreateFile(deviceDetails->DevicePath, 
+	handle = CreateFile(deviceDetails->DevicePath,
 		GENERIC_READ | GENERIC_WRITE,
 		FILE_SHARE_READ | FILE_SHARE_WRITE,
-//		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL);
 
-	free(deviceDetails);
-
-	if (*lpHandle == INVALID_HANDLE_VALUE)
+	if (handle == INVALID_HANDLE_VALUE)
 	{
 		DEBUG_PRINT(("  Open failed.\n"));
-		return 2;
+		result = 2;
+		goto cleanup;
 	}
 
 	deviceAttributes.Size = sizeof(HIDD_ATTRIBUTES);
-	bResult = HidD_GetAttributes(*lpHandle, &deviceAttributes);
-	if (bResult == FALSE)
+	if (!HidD_GetAttributes(handle, &deviceAttributes))
 	{
 		DEBUG_PRINT(("  Open failed.\n"));
-		return 5;
+		result = 5;
+		goto cleanup;
 	}
 	DEBUG_PRINT(("  Attributes: vid=%d pid=%d\n", deviceAttributes.VendorID, deviceAttributes.ProductID));
 
 	if (deviceAttributes.VendorID != vendor_id || deviceAttributes.ProductID != product_id) {
-		CloseHandle(*lpHandle);
-		*lpHandle = INVALID_HANDLE_VALUE;
-		return 3;
+		result = 3;
+		goto cleanup;
 	}
 
-	return 0;
+	// Transfer ownership only after all checks succeed.
+	*lpHandle = handle;
+	handle = INVALID_HANDLE_VALUE;
+	result = 0;
+
+cleanup:
+	free(deviceDetails);
+	if (handle != INVALID_HANDLE_VALUE) CloseHandle(handle);
+	return result;
 }
 
 int TdHidListDevices(UINT16 vendor_id, UINT16 product_id, LPCSTR product_name, LPSTR lpBuffer, int szBuffer)
 {
-	char tmp_buffer[128]; // For USB devices, the maximum string length is 126 wide characters (not including the terminating NULL character). (by MSDN)
+	char tmp_buffer[128 * sizeof(WCHAR)]; // Up to 126 UTF-16 characters plus the terminator.
 	GUID                                hidGuid;
 	HDEVINFO							deviceInfoList;
 	int									buffer_count = 0;
@@ -154,24 +169,26 @@ int TdHidListDevices(UINT16 vendor_id, UINT16 product_id, LPCSTR product_name, L
 
 		convertUniToAscii(tmp_buffer);
 
-		if (buffer_count > 0) {
-			buffer_count += 1; // comma length
-			if (lpBuffer != NULL) strcat_s(lpBuffer, szBuffer, ",");
+		int separator_length = buffer_count > 0 ? 1 : 0;
+		buffer_count += separator_length + (int)strlen(tmp_buffer);
+		// Append a complete entry only when it and the terminator fit.
+		if (lpBuffer != NULL && szBuffer > buffer_count) {
+			if (separator_length) strcat_s(lpBuffer, szBuffer, ",");
+			strcat_s(lpBuffer, szBuffer, tmp_buffer);
 		}
-
-		buffer_count += strlen(tmp_buffer);
-		if (lpBuffer != NULL) strcat_s(lpBuffer, szBuffer, tmp_buffer);
 	}
 
 	SetupDiDestroyDeviceInfoList(deviceInfoList);
 
+	// Do not expose a partial list if the device count grew between calls.
+	if (lpBuffer != NULL && szBuffer > 0 && buffer_count >= szBuffer) lpBuffer[0] = '\0';
 	return (buffer_count + 1); // +1 = NULL
 }
 
 
 int *TdHidOpenDevice(UINT16 vendor_id, UINT16 product_id, LPCSTR product_name, LPSTR serialNumber)
 {
-	char tmp_buffer[128]; // For USB devices, the maximum string length is 126 wide characters (not including the terminating NULL character). (by MSDN)
+	char tmp_buffer[128 * sizeof(WCHAR)]; // Up to 126 UTF-16 characters plus the terminator.
 	int *handle = INVALID_HANDLE_VALUE;
 	GUID   hidGuid;
 	HDEVINFO deviceInfoList;
@@ -184,8 +201,6 @@ int *TdHidOpenDevice(UINT16 vendor_id, UINT16 product_id, LPCSTR product_name, L
 		int result;
 
 		DEBUG_PRINT(("Device#%d\n", i));
-
-		if (handle != INVALID_HANDLE_VALUE) CloseHandle(handle);
 
 		result = open_device(&handle, &hidGuid, deviceInfoList, i, vendor_id, product_id);
 		if (result == 1) break; // no device found anymore
