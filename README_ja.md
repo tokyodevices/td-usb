@@ -88,8 +88,8 @@ VID/PIDはUSBデバイスを挿した際のdmesgやsyslogから確認可能で�
 |TDFA60350|[USB 0-5V/1-5V 電圧信号用 アナログ出力ユニット ガルバニック絶縁 バスパワー](https://tokyodevices.com/items/323)|`tdfa60350`|
 |TDPC0201|[USBウォッチドッグ・電源リセットデバイス 「リセットマスター」](https://tokyodevices.com/items/288)|`tdpc0201`|
 |TDPC0205|["時計ドングル" USB リアルタイムクロック(RTC)  現在時刻取得・同期用 電池バックアップ](https://tokyodevices.com/items/319)|`tdpc0205`|
-|TDPC2401|USB挿抜コントローラ基板|`tdpc2401`|
-|TDPW6620|USB LED定電流コントローラ、1ch・最大1 A|`tdpw6620`|
+|TDPC2401|汎用 USB 2.0 バス制御スイッチ 自動タイマー再接続 コネクタ挿抜エミュレータ|`tdpc2401`|
+|TDPW6620|USB 汎用 1A LED調光コントローラ アナログ定電流 1ch 最大1A|`tdpw6620`|
 |TDSN0700-UA|[USB 汎用 紫外線照度計, UVセンサ, UVA 295-490nm, バスパワー](https://tokyodevices.com/items/321)|`tdsn0700`|
 |TDSN0700-UB|[USB 汎用 紫外線照度計, UVセンサ, UVB 240-320nm, バスパワー](https://tokyodevices.com/items/322)|`tdsn0700`|
 |TDSN5200|[汎用 USB ToF レーザー距離センサ 距離計測 最大6m バスパワー](https://tokyodevices.com/items/326)|`tdsn5200`|
@@ -108,6 +108,8 @@ VID/PIDはUSBデバイスを挿した際のdmesgやsyslogから確認可能で�
 
 
 ## コマンド仕様
+
+機器固有の説明は[docsフォルダ](docs/)配下を参照してください。
 
 TD-USBコマンドの書式は次の通りです。
 
@@ -217,101 +219,6 @@ PCに同じモデルの製品が複数台接続されている時に各個体の
 実行しない場合には`y`以外のキーを入力してください。
 
     WARNING: The device will not be available until new firmware is written. Continue? [y/N]
-
-
-### TDFA60228 8ch電流入力
-
-レジスタ名なしの`get`はCH0～CH7を順に取得し、カンマ区切りの1行で出力します。
-レジスタ名を指定した場合は、指定順に出力します。既定の表示では各チャンネルの
-校正値を用いて`電流[mA] = ADC_VALUE_CHn × 25.0 / CALIBRATION_CHn`で換算します。
-4～20mAの範囲への制限は行いません。`--format=raw`は校正値を読まず、ADC生値を
-符号なし整数で出力します。それ以外のレジスタは整数で表示しますが、
-`FIRMWARE_VERSION`は既定で`major.minor`、rawで格納された整数値を表示します。
-
-|レジスタ名|アドレス|アクセス・SETの有効値|`save`の対象|
-|---|---|---|---|
-|`CONTROL_FLAG`|`0x00`|読書き可。0: DUMP無効、4: DUMP有効。初期値0|対象|
-|`CALIBRATION_CH0`～`CALIBRATION_CH7`|`0x01`～`0x08`|読書き可。1～4095。初期値3103|対象|
-|`ADC_VALUE_CH0`～`ADC_VALUE_CH7`|`0x80`～`0x87`|読出し専用。0～4095。`0xFFFF`: 測定値なし|対象外|
-|`FIRMWARE_VERSION`|`0xF2`|読出し専用。`(major << 8) \| minor`|対象外|
-
-CH0～CH7は基板のIN0～IN7に対応します。校正値は、各チャンネルに25mAを入力した
-ときのADC生値です。SETには符号なし10進整数を指定します。予約ビット、範囲外の値、
-読出し専用レジスタへの書込みはエラーになります。全引数を検証してから指定順に
-書き込み、保存には別途`save`を実行します。単一チャンネル用の`ADC_VALUE`と
-`CALIBRATION`という名前はTDFA60228では使用できません。
-
-`listen`はDUMPを受信するたびにCH0～CH7を1行で出力します。`ADC_VALUE_CHn`を
-指定すると、そのチャンネルのみを指定順に出力します。先に`set CONTROL_FLAG=4`で
-DUMPを有効にしてください。`listen`自体は設定を変更せず、イベントが来るまで待機します。
-ADC通信失敗時も含めて100ms周期でDUMPを送信します。DUMPの8chは同じ走査の結果ですが、
-個別のGETでは走査の更新をまたぐ場合があります。各chは順番に測定され、同時測定ではありません。
-`--skip=N`は完全なDUMPをN件読み飛ばしてから次の1行を出力し、チャンネル単位では
-間引きません。`--loop`なしでも1行を出力するまで待機します。
-停止には`set CONTROL_FLAG=0`を使用します。既定表示とrawに対応し、
-JSON・CSV・TSVのフォーマット指定には対応しません。
-
-初回測定成功前またはADC通信失敗時、ファームウェアは全chに`0xFFFF`（65535）を返します。
-`get`または`listen`がこの値を受信すると、標準エラー出力に未測定またはADC通信失敗を示す
-メッセージを出し、終了コード12（`DEVICE_IO_ERROR`）で終了します。`--format=raw`や
-`--loop`でも同じ動作です。異常を検出した行は、一部分も標準出力に出しません。
-`listen`は`--skip`による間引きの前に全chを検証するため、読み飛ばすDUMPの異常も検出します。
-
-校正値はデバイス接続ごとに保持し、このプロセスで該当する校正レジスタを書き換えた
-後に再取得します。別プロセスで校正値を変更した場合、継続中のget/listenは再起動してください。
-不正な校正値やDUMPは通信エラーとなります。raw表示に校正値は不要です。
-
-```text
-td-usb tdfa60228 get
-td-usb tdfa60228 get ADC_VALUE_CH0 ADC_VALUE_CH7 --format=raw
-td-usb tdfa60228 get FIRMWARE_VERSION CALIBRATION_CH7
-td-usb tdfa60228 set CALIBRATION_CH0=3103 CALIBRATION_CH7=3098
-td-usb tdfa60228 save
-td-usb tdfa60228 set CONTROL_FLAG=4
-td-usb tdfa60228 listen --loop
-td-usb tdfa60228 listen ADC_VALUE_CH0 ADC_VALUE_CH7 --format=raw --skip=9 --loop
-td-usb tdfa60228 set CONTROL_FLAG=0
-```
-
-`init`と`dfu`は未対応です。`destroy`はファームウェアのRelease版にある消去処理を
-呼び出します。現在のファームにはブートローダがないため、復旧にはSWD書込みが必要であり、
-USB DFUモードには入りません。Debug版のファームはERASEを受け付けません。
-
-
-### TDPC2401 USB挿抜コントローラ
-
-レジスタ名なしの `get` は `BRIDGE_STATUS` を返します。複数のレジスタ名を指定すると、
-指定順の符号なし10進数をカンマ区切りで出力します。標準形式と `--format=raw` は同じ出力です。
-`set 0` ～ `set 3` は `set BRIDGE_STATUS=0` ～ `set BRIDGE_STATUS=3` の省略形です。
-設定値は符号なし10進数で指定します。
-
-|レジスタ|範囲・意味|`save` の保存対象|
-|---|---|---|
-|`INITIAL_BRIDGE_STATUS`|0～3、起動時の接続状態。初期値3|対象|
-|`AUTO_ENABLE`|0: 停止、1: 開始・再開始。初期値0|対象|
-|`AUTO_MASK`|1～3、自動運転の切断対象。初期値3|対象|
-|`CONNECTED_TIME`|1～4294967295秒。初期値3595|対象|
-|`DISCONNECTED_TIME`|1～4294967295秒。初期値5|対象|
-|`BRIDGE_STATUS`|0～3、現在の接続状態|対象外|
-|`TIMER_REMAINING`|残り秒数。読み取り専用、停止中は0|対象外|
-|`FIRMWARE_VERSION`|`(major << 8) \| minor`。読み取り専用|対象外|
-
-接続状態とマスクの bit 0 は VBUS、bit 1 は DATA です。接続状態では1が接続を表します。
-`BRIDGE_STATUS` への書き込みは自動運転を停止します。
-`AUTO_ENABLE=0` は現在の接続状態を維持して停止し、1の書き込みは接続区間の先頭から開始します。
-設定は指定順に適用されるため、自動運転の開始は最後に指定してください。
-
-```text
-td-usb tdpc2401 get BRIDGE_STATUS TIMER_REMAINING --loop=1000
-td-usb tdpc2401 set BRIDGE_STATUS=3
-td-usb tdpc2401 set AUTO_ENABLE=0 AUTO_MASK=3 CONNECTED_TIME=3595 DISCONNECTED_TIME=5 AUTO_ENABLE=1
-td-usb tdpc2401 save
-```
-
-`init` は自動運転を停止し、上記の初期値へ戻して VBUS と DATA の両方を接続します。
-設定を保存する場合は別途 `save` を実行してください。手動の `BRIDGE_STATUS` は保存されず、
-起動時は `AUTO_ENABLE` と `INITIAL_BRIDGE_STATUS` に従います。
-`listen` と `destroy` は非対応です。状態監視には `get --loop` を使用します。
 
 
 ### 終了コードとエラー

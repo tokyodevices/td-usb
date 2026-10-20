@@ -45,10 +45,10 @@ CLI(Command Line Interface) for USB-based products of Tokyo Devices, Inc.
 |TDSN604A8|[Genral-purpose Precision USB Current Sensor 20 Bit 0.8A Galvanic Isolation Bus-Powered](https://en.tokyodevices.com/items/332)|`tdsn604xx`|
 |TDSN60408|[Genral-purpose Precision USB Current Sensor 20 Bit 8A Galvanic Isolation Bus-Powered](https://en.tokyodevices.com/items/331)|`tdsn604xx`|
 |TDSN60420|[Genral-purpose Precision USB Current Sensor 20 Bit 20A Galvanic Isolation Bus-Powered](https://en.tokyodevices.com/items/330)|`tdsn604xx`|
-|TDSN7200|[General-Purpose High-Precision USB Temperature, Humidity, and Pressure Sensor, -40 to 125ÅãC, 0 to 100%RH, 260 to 1,260hPa, Bus Powered](https://en.tokyodevices.com/items/327)|`tdsn7200`|
+|TDSN7200|[General-Purpose High-Precision USB Temperature, Humidity, and Pressure Sensor, -40 to 125ÔøΩÔøΩC, 0 to 100%RH, 260 to 1,260hPa, Bus Powered](https://en.tokyodevices.com/items/327)|`tdsn7200`|
 |TDSN7300|[Air Analyzer 2: Generic USB CO2 Meter](https://en.tokyodevices.com/items/356)|`tdsn7300`|
-|TDSN7360|[General-purpose high-precision USB accelerometer, 3-axis, low-noise, Å}2.5g, 440Hz, bus-powered](https://en.tokyodevices.com/items/335)|`tdsn7360`|
-|TDSN7400|[General purpose USB thermocouple temperature sensor K type -40 to 1200Åé galvanic isolation Bus-Powered](https://en.tokyodevices.com/items/333)|`tdsn7400`|
+|TDSN7360|[General-purpose high-precision USB accelerometer, 3-axis, low-noise, ÔøΩ}2.5g, 440Hz, bus-powered](https://en.tokyodevices.com/items/335)|`tdsn7360`|
+|TDSN7400|[General purpose USB thermocouple temperature sensor K type -40 to 1200ÔøΩÔøΩ galvanic isolation Bus-Powered](https://en.tokyodevices.com/items/333)|`tdsn7400`|
 |TDSN7502|[General purpose, Load cell to USB interface, Weight/Pressure sensor, 24-bit, Bus-power](https://en.tokyodevices.com/items/344)|`tdsn7502`|
 |TDFA1104|[General purpose USB 7 segment LED display, 4 digits, 0.8 inch height, red](https://en.tokyodevices.com/items/350)|`tdfa1104`|
 
@@ -120,6 +120,8 @@ Note that `16c0` and `05df` should be replaced to VID/PID of the device which yo
 
 ## Usage
 
+For device-specific instructions, see the [docs folder](docs/).
+
 Available operation and option differ depending on the product model.
 
 
@@ -170,106 +172,6 @@ With `--loop` option, TD-USB read repeatedly `(name)=(value)` pair from the stan
 
 - After this operation the device will be unavailable until new firmware is written.
 
-
-
-### TDFA60228 eight-channel current input
-
-`get` with no register names reads CH0 through CH7. To read selected registers,
-give their names in the desired order. Each call prints one comma-separated row.
-The default format converts ADC values to mA using each channel's calibration:
-`current_mA = ADC_VALUE_CHn * 25.0 / CALIBRATION_CHn`. Values are not clamped to
-4-20 mA. `--format=raw` prints unsigned ADC counts instead, without reading
-calibration. Other registers print unsigned integers; the default format displays
-`FIRMWARE_VERSION` as `major.minor`, while raw displays its packed integer.
-
-|Register|Address|Access / valid SET values|Saved by `save`|
-|---|---|---|---|
-|`CONTROL_FLAG`|`0x00`|Read/write; 0: DUMP off, 4: DUMP on; default 0|Yes|
-|`CALIBRATION_CH0` through `CALIBRATION_CH7`|`0x01` through `0x08`|Read/write; 1-4095; default 3103|Yes|
-|`ADC_VALUE_CH0` through `ADC_VALUE_CH7`|`0x80` through `0x87`|Read-only; 0-4095; `0xFFFF`: measurement unavailable|No|
-|`FIRMWARE_VERSION`|`0xF2`|Read-only; `(major << 8) \| minor`|No|
-
-Channel numbers match the board's IN0 through IN7. Each calibration register is
-the ADC count at 25 mA for that channel. SET accepts unsigned decimal integers;
-reserved control bits, out-of-range values and read-only registers are rejected.
-All arguments are validated before any SET is sent, then applied in order.
-Use `save` explicitly to persist settings. The old single-channel names
-`ADC_VALUE` and `CALIBRATION` are not supported on TDFA60228.
-
-`listen` prints one row per DUMP containing CH0 through CH7, or the named
-`ADC_VALUE_CHn` registers in the requested order. Enable DUMP with
-`set CONTROL_FLAG=4` first; `listen` does not change this setting and waits
-indefinitely if no event arrives. DUMPs arrive every 100 ms, including failed ADC
-scans. Each DUMP contains all eight readings from one scan, while individual GETs
-can span successive scans. Channels are sampled sequentially, not simultaneously.
-`--skip=N` discards N complete DUMPs before printing the next row; it never drops
-individual channels. Without `--loop`, listen waits until it prints one row.
-Use `set CONTROL_FLAG=0` to stop DUMP. Default and raw formats are supported;
-JSON, CSV and TSV format switches are unsupported.
-
-Before the first successful measurement or after an ADC communication failure,
-the firmware returns `0xFFFF` (65535) for every channel. If `get` or `listen`
-receives this value, TD-USB reports "not yet measured or ADC communication failed"
-on stderr and exits with code 12 (`DEVICE_IO_ERROR`), including with `--format=raw`
-or `--loop`. The failed row produces no stdout output, even partially. `listen`
-checks all channels before applying `--skip`, so a skipped DUMP also reports errors.
-
-Calibration is cached per device connection and refreshed after this process
-writes the corresponding calibration register. Restart an ongoing get/listen
-command after calibration changes made by another process. Invalid calibration
-or malformed DUMPs produce a device I/O error; raw output needs no calibration.
-
-```text
-td-usb tdfa60228 get
-td-usb tdfa60228 get ADC_VALUE_CH0 ADC_VALUE_CH7 --format=raw
-td-usb tdfa60228 get FIRMWARE_VERSION CALIBRATION_CH7
-td-usb tdfa60228 set CALIBRATION_CH0=3103 CALIBRATION_CH7=3098
-td-usb tdfa60228 save
-td-usb tdfa60228 set CONTROL_FLAG=4
-td-usb tdfa60228 listen --loop
-td-usb tdfa60228 listen ADC_VALUE_CH0 ADC_VALUE_CH7 --format=raw --skip=9 --loop
-td-usb tdfa60228 set CONTROL_FLAG=0
-```
-
-`init` and `dfu` are unsupported. `destroy` retains the firmware's Release-only
-erase operation: the current firmware has no bootloader, so recovery requires
-SWD programming; this does not enter USB DFU mode. Debug firmware ignores ERASE.
-
-
-### TDPC2401 USB connection controller
-
-`get` without register names returns `BRIDGE_STATUS`. Multiple names return unsigned
-decimal values in the requested order, separated by commas. The default format and
-`--format=raw` use the same output. `set 0` through `set 3` are shortcuts for
-`set BRIDGE_STATUS=0` through `set BRIDGE_STATUS=3`. Values are unsigned decimal integers.
-
-|Register|Range / meaning|Saved by `save`|
-|---|---|---|
-|`INITIAL_BRIDGE_STATUS`|0-3; startup state, default 3|Yes|
-|`AUTO_ENABLE`|0: stop, 1: start/restart; default 0|Yes|
-|`AUTO_MASK`|1-3; automatic disconnection mask, default 3|Yes|
-|`CONNECTED_TIME`|1-4294967295 seconds; default 3595|Yes|
-|`DISCONNECTED_TIME`|1-4294967295 seconds; default 5|Yes|
-|`BRIDGE_STATUS`|0-3; current state|No|
-|`TIMER_REMAINING`|Remaining seconds; read-only, 0 when stopped|No|
-|`FIRMWARE_VERSION`|`(major << 8) \| minor`; read-only|No|
-
-For bridge states and masks, bit 0 is VBUS and bit 1 is DATA. In a bridge state,
-1 means connected. Writing `BRIDGE_STATUS` stops automatic operation.
-`AUTO_ENABLE=0` stops while keeping the current state; writing 1 starts a new
-connected interval. Commands are applied in order; enable automatic operation last.
-
-```text
-td-usb tdpc2401 get BRIDGE_STATUS TIMER_REMAINING --loop=1000
-td-usb tdpc2401 set BRIDGE_STATUS=3
-td-usb tdpc2401 set AUTO_ENABLE=0 AUTO_MASK=3 CONNECTED_TIME=3595 DISCONNECTED_TIME=5 AUTO_ENABLE=1
-td-usb tdpc2401 save
-```
-
-`init` stops automatic operation, restores the defaults above, and connects both
-VBUS and DATA. Run `save` separately to persist settings. Manual `BRIDGE_STATUS`
-is not saved; startup uses `AUTO_ENABLE` and `INITIAL_BRIDGE_STATUS`.
-`listen` and `destroy` are unsupported. Use `get --loop` to monitor the state.
 
 
 ## Exit code and error definition
